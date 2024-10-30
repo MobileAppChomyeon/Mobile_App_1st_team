@@ -1,41 +1,30 @@
 # Mobile_App_1st_team
-모바일 앱 개발01분반
->SDK Version
-sdk tools android
 
-깃 세팅하기
-
-개발환경
-mac - license 추가 , cocoa pad
-윈도우 -
 
 TODO:
 >기능
 1. 식물 선택 화면
 2. 홈
 3. 수면 데이터 리스트 - 상세 데이터
-4. 식물 도감 리스트 - 상세 수면 데이터
+4. 식물 도감 리스트 - 식물 상세 데이터
 5. 설정
-
-
-<br/>
 <br/>
 
-# 1. Project Overview (프로젝트 개요)
+# 1. Project Overview
 - 프로젝트 이름: 초면
 - 프로젝트 설명: 수면을 통한 식물 키우기
 
-<br/>
+
 <br/>
 
 # 2. Team Members (팀원 및 팀 소개)
 |                                                        강지인                                                        |                                                        배준재                                                        |                                                        송정현                                                        |                                                        이형경                                                        |
 |:-----------------------------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------:|
-| <img src="https://github.com/user-attachments/assets/c1c2b1e3-656d-4712-98ab-a15e91efa2da" alt="이동규" width="150"> | <img src="https://github.com/user-attachments/assets/78ec4937-81bb-4637-975d-631eb3c4601e" alt="신유승" width="150"> | <img src="https://github.com/user-attachments/assets/78ce1062-80a0-4edb-bf6b-5efac9dd992e" alt="김나연" width="150"> | <img src="https://github.com/user-attachments/assets/beea8c64-19de-4d91-955f-ed24b813a638" alt="이승준" width="150"> |
+| | |  |  |
 |                                                       None                                                        |                                                        None                                                         |                                                        None                                                         |                                                        None                                                         |
 |                                       [GitHub](https://github.com/J2in)                                        |                                       [GitHub](https://github.com/Baejjyee)                                        |                                        [GitHub](https://github.com/katie424)                                        |                                       [GitHub](https://github.com/Lee-Hyeongkyeong)                                       |
 
-<br/>
+
 <br/>
 
 # 3. Key Features (주요 기능)
@@ -53,11 +42,11 @@ TODO:
     - 상세 수면 정보
     - 수면 목표 설정
       <br/>
-      <br/>
+
 
 # 4. Tasks & Responsibilities (작업 및 역할 분담)
 <br/>
-<br/>
+
 
 # 5. Technology Stack (기술 스택)
 ## 5.1 Language
@@ -89,7 +78,6 @@ project_root/
 ```
 
 <br/>
-<br/>
 
 # 7. Development Workflow (개발 워크플로우)
 ## 브랜치 전략 (Branch Strategy)
@@ -103,7 +91,6 @@ project_root/
     - 팀원 각자의 개발 브랜치입니다.
     - 모든 기능 개발은 이 브랜치에서 이루어집니다.
 
-<br/>
 <br/>
 
 # 8. Coding Convention
@@ -174,23 +161,6 @@ function fnName() {};
 
 <br/>
 
-## 태그 네이밍
-Styled-component태그 생성 시 아래 네이밍 규칙을 준수하여 의미 전달을 명확하게 한다.<br/>
-태그명이 길어지더라도 의미 전달의 명확성에 목적을 두어 작성한다.<br/>
-전체 영역: Container<br/>
-영역의 묶음: {Name}Area<br/>
-의미없는 태그: <><br/>
-```
-<Container>
-  <ContentsArea>
-    <Contents>...</Contents>
-    <Contents>...</Contents>
-  </ContentsArea>
-</Container>
-```
-
-<br/>
-
 ## 폴더 네이밍
 카멜 케이스를 기본으로 하며, 컴포넌트 폴더일 경우에만 파스칼 케이스로 사용한다.
 ```
@@ -199,8 +169,6 @@ camelCase
 // 파스칼 케이스
 PascalCase
 ```
-
-<br/>
 <br/>
 
 # 9. 커밋 컨벤션
@@ -210,7 +178,6 @@ type : subject
 
 body 
 ```
-
 <br/>
 
 ## type 종류
