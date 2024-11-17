@@ -11,7 +11,7 @@ class Daily extends StatelessWidget {
   final int remSleep = 80;
   final int lightSleep = 143;
   final int deepSleep = 59;
-  final int totalSleepDuration = 0;
+  int totalSleepDuration = 0;
   final int sleepScore = 100;  // 아직 사용 못함
   final int experiencePoints = 60;
 
