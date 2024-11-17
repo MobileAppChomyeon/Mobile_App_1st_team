@@ -98,7 +98,7 @@ class _WeeklyState extends State<Weekly> {
         centerTitle: true,
       ),
       body: Padding(
-        padding: EdgeInsets.all(size.height * 0.04),
+        padding: EdgeInsets.fromLTRB(size.width * 0.08, size.height * 0.04, size.width * 0.08, size.height * 0.04),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -118,7 +118,7 @@ class _WeeklyState extends State<Weekly> {
                     }));
               },
               child: Container(
-                width: size.width * 0.85,
+                width: size.width * 0.84,
                 height: size.height * 0.15,
                 child: Row(
                   children: [
@@ -164,7 +164,7 @@ class _WeeklyState extends State<Weekly> {
               height: size.height * 0.02,
             ),
             Container(
-              width: size.width * 0.85,
+              width: size.width * 0.84,
               height: size.height * 0.35,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(10)),

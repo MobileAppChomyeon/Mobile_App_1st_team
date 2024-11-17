@@ -41,11 +41,10 @@ class PieChart extends CustomPainter {
 
   // 원의 중앙에 텍스트를 적음.
   void drawText(Canvas canvas, Size size, String text) {
-    double fontSize = getFontSize(size, text);
 
     TextSpan sp = TextSpan(
         style: TextStyle(
-            fontSize: fontSize,
+            fontSize: 40,
             fontWeight: FontWeight.w500,
             color: Colors.black),
         text: text); // TextSpan은 Text위젯과 거의 동일하다.

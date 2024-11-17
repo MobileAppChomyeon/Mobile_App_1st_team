@@ -70,7 +70,7 @@ class Daily extends StatelessWidget {
         centerTitle: true,
       ),
       body: Padding(
-        padding: EdgeInsets.all(size.height * 0.04),
+        padding: EdgeInsets.fromLTRB(size.width * 0.08, size.height * 0.04, size.width * 0.08, size.height * 0.04),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -80,7 +80,7 @@ class Daily extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  width: size.width * 0.4,
+                  width: size.width * 0.41,
                   height: size.height * 0.36,
                   padding: EdgeInsets.all(size.height * 0.03),
                   child: Column(
@@ -166,10 +166,10 @@ class Daily extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  width: size.width * 0.03,
+                  width: size.width * 0.02,
                 ),
                 Container(
-                  width: size.width * 0.4,
+                  width: size.width * 0.41,
                   height: size.height * 0.36,
                   padding: EdgeInsets.all(size.height * 0.03),
                   child: Column(
@@ -211,7 +211,7 @@ class Daily extends StatelessWidget {
             ),
             SizedBox(height: size.height * 0.02),
             Container(
-              width: size.width * 0.85,
+              width: size.width * 0.84,
               height: size.height * 0.2,
               padding: EdgeInsets.fromLTRB(size.width * 0.06, size.height * 0.03, size.width * 0.06, size.height * 0.03),
               child: Column(
@@ -298,8 +298,10 @@ class Daily extends StatelessWidget {
                   Container(
                       width: size.width * 0.04,
                       height: size.height * 0.02,
-                      child: SvgPicture.asset('assets/images/quote.svg')
-                  ),
+                      child: Transform.rotate(
+                          angle: 3.14159, // 라디안 단위로 180도 (PI)
+                          child: SvgPicture.asset('assets/images/quote.svg')
+                  ),),
                 ]
             )
 
