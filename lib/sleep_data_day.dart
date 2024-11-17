@@ -1,151 +1,314 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
+import 'pie_chart.dart';
+
 
 class Daily extends StatelessWidget {
-  const Daily({super.key});
+
+  final DateTime chosen;
+  String sleepStartTime = '11:30 PM';
+  String wakeupTime = '8:31 AM';
+  int remSleep = 80;
+  int lightSleep = 143;
+  int deepSleep = 59;
+  int totalSleepDuration = 0;
+  int sleepScore = 100;  // 아직 사용 못함
+  int experiencePoints = 60;
+
+  Daily({
+    super.key,
+    required this.chosen,
+  });
+
+  Map<String, int> minToHour(int totalMinutes) {
+    int hours = totalMinutes ~/ 60;
+    int minutes = totalMinutes % 60;
+
+    return {
+      'hours': hours,
+      'minutes': minutes,
+    };
+  }
+
+  int calculateDuration(String startTime, String endTime) {
+    DateTime parseTime(String time, bool isPM) {
+      List<String> parts = time.split(':');
+      int hour = int.parse(parts[0]);
+      int minute = int.parse(parts[1]);
+
+      if (isPM && hour != 12) hour += 12;
+      if (!isPM && hour == 12) hour = 0;
+
+      return DateTime(0, 1, 1, hour, minute);
+    }
+
+    bool isStartPM = startTime.contains('PM');
+    bool isEndPM = endTime.contains('PM');
+
+    DateTime start = parseTime(startTime.replaceAll(RegExp(r'[APap][Mm]'), '').trim(), isStartPM);
+    DateTime end = parseTime(endTime.replaceAll(RegExp(r'[APap][Mm]'), '').trim(), isEndPM);
+
+    if (end.isBefore(start)) end = end.add(Duration(days: 1));
+
+    Duration difference = end.difference(start);
+    return difference.inMinutes;
+  }
+
 
   @override
   Widget build(BuildContext context) {
+
+    final Size size = MediaQuery.of(context).size;
+    String message = '어느 정도 주무셨군요!\n 오늘은 조금 더 일찍 잠 들어 보세요';
+    totalSleepDuration = calculateDuration(sleepStartTime, wakeupTime);
+
     return Scaffold(
+      backgroundColor: Color(0xffEDF2F7),
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.onPrimary,
-        title: Text("잠 기록",
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Color(0xffEDF2F7),
+        title: Text("잠 기록", style: Theme.of(context).textTheme.titleMedium),
         centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(32.0),
+        padding: EdgeInsets.all(size.height * 0.04),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height:20),
+            Text("${chosen.month}월 ${chosen.day}일의 수면 기록",
+                style: Theme.of(context).textTheme.titleMedium),
+            SizedBox(height: size.height * 0.03),
             Row(
               children: [
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.all(20.0),
-                    height: 260,
-                    child: Column(
-                      children: [
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text("수면 경험치", style:
-                          TextStyle(fontWeight: FontWeight.bold),
-                          ),
+                Container(
+                  width: size.width * 0.4,
+                  height: size.height * 0.36,
+                  padding: EdgeInsets.all(size.height * 0.03),
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "수면 경험치",
+                          style: Theme.of(context).textTheme.bodyLarge
                         ),
-                        SizedBox(height: 40),
-                        Text("+ 60", style:
-                        TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
+                      ),
+                      SizedBox(height: size.height * 0.02),
+                      Container(
+                        child: CustomPaint( // CustomPaint를 그리고 이 안에 차트를 그려줍니다..
+                          size: Size(size.width * 0.25, size.width * 0.25,), // CustomPaint의 크기는 가로 세로 150, 150으로 합니다.
+                          painter: PieChart(
+                            percentage: experiencePoints, // 파이 차트가 얼마나 칠해져 있는지 정하는 변수입니다.
+                            textScaleFactor: 0.8, ),
                         ),
-                        ),
-                        SizedBox(height: 20),
-                        Text("잠든 시간 good"),
-                        Text("수면 시간 good"),
-                        Text("수면의 질 good")
+                      ),
+                      SizedBox(height: size.height * 0.02),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children:[
+                          Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  "잠든 시간",
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  textAlign: TextAlign.right,
+                                ),
+                                Text(
+                                  "총 수면 시간",
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  textAlign: TextAlign.right,
+                                ),
+                                Text(
+                                  "수면의 질",
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  textAlign: TextAlign.right,
+                                ),
+                              ]),
+                          SizedBox(width:5),
+                          Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text("좋음",
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,),
+                                  textAlign: TextAlign.right,
+                                ),
+                                Text(
+                                  "보통",
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,),
+                                  textAlign: TextAlign.right,
+                                ),
+                                Text(
+                                  "나쁨",
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ]),
+                        ]
+                      )
+                    ],
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xffA3BFD9).withOpacity(0.6),
+                        Color(0xffC1E1C1).withOpacity(0.6),
                       ],
                     ),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFd9d9d9),
-                      borderRadius: BorderRadius.all(Radius.circular(15)),
-                    ),
+                    borderRadius: BorderRadius.all(Radius.circular(15)),
                   ),
                 ),
                 SizedBox(
-                  width: 10,
+                  width: size.width * 0.03,
                 ),
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.all(20.0),
-                    height: 260,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("잠시간", style:
-                        TextStyle(fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.left,
+                Container(
+                  width: size.width * 0.4,
+                  height: size.height * 0.36,
+                  padding: EdgeInsets.all(size.height * 0.03),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("수면 시간", style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      SizedBox(height: size.height * 0.02),
+                      Padding(
+                        padding: EdgeInsets.only(left: size.width * 0.01),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("잠든 시간", style: Theme.of(context).textTheme.bodyMedium,),
+                            Text(sleepStartTime,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500, fontSize: 24)),
+                            SizedBox(height: size.height * 0.01),
+                            Text("깬 시간", style: Theme.of(context).textTheme.bodyMedium,),
+                            Text(wakeupTime,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500, fontSize: 24)),
+                            SizedBox(height: size.height * 0.01),
+                            Text("총 수면 시간", style: Theme.of(context).textTheme.bodyMedium,),
+                            Text("${minToHour(totalSleepDuration)['hours']}H ${minToHour(totalSleepDuration)['minutes']}M",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500, fontSize: 24)),
+                          ],
                         ),
-                        SizedBox(height:20),
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(5,0,0,0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("잠든 시간"),
-                              Text("11:30 PM", style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 25)
-                              ),
-                              Text("깬 시간"),
-                              Text("8:31 AM", style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 25)
-                              ),
-                              Text("총 수면 시간"),
-                              Text("9H 1M", style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 25)
-                              ),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFd9d9d9),
-                      borderRadius: BorderRadius.all(Radius.circular(15)),
-                    ),
+                      )
+                    ],
+                  ),
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                    color: Colors.white,
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 15),
+            SizedBox(height: size.height * 0.02),
             Container(
-              padding: EdgeInsets.fromLTRB(10,40,10,40),
-              height: 150,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              width: size.width * 0.85,
+              height: size.height * 0.2,
+              padding: EdgeInsets.fromLTRB(size.width * 0.06, size.height * 0.03, size.width * 0.06, size.height * 0.03),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    children: [
-                      Text("렘수면"),
-                      SizedBox(height: 10),
-                      Text("1H 20M", style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 25),
-                      ),
-                    ],
+                  Text("수면의 질", style: Theme.of(context).textTheme.bodyLarge,
                   ),
-                  Column(
-                    children: [
-                      Text("얕은 수면"),
-                      SizedBox(height: 10),
-                      Text("2H 23M", style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 25),
-                      ),
-                    ],
+                  SizedBox(
+                    height: size.height * 0.02
                   ),
-                  Column(
-                    children: [
-                      Text("깊은 수면"),
-                      SizedBox(height: 10),
-                      Text("59M", style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 25),
-                      ),
-                    ],
+                  Container(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("렘수면", style: TextStyle(
+                                fontWeight: FontWeight.w300, fontSize: 16),),
+                            SizedBox(height: size.height * 0.01),
+                            Text(
+                              "${minToHour(remSleep)['hours']}H ${minToHour(remSleep)['minutes']}M",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500, fontSize: 24),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("얕은 수면", style: TextStyle(
+                                fontWeight: FontWeight.w300, fontSize: 16),),
+                            SizedBox(height: size.height * 0.01),
+                            Text(
+                              "${minToHour(lightSleep)['hours']}H ${minToHour(lightSleep)['minutes']}M",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500, fontSize: 24),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("깊은 수면", style: TextStyle(
+                                fontWeight: FontWeight.w300, fontSize: 16),),
+                            SizedBox(height: size.height * 0.01),
+                            Text(
+                              "${minToHour(deepSleep)['hours']}H ${minToHour(deepSleep)['minutes']}M",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500, fontSize: 24),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
               decoration: const BoxDecoration(
-                color: Color(0xFFd9d9d9),
                 borderRadius: BorderRadius.all(Radius.circular(15)),
+                color: Colors.white,
               ),
+            ),
+            SizedBox(
+              height: size.height * 0.03,
+            ),
+            Text("이날의 메시지", style: Theme.of(context).textTheme.bodyLarge,
+              textAlign: TextAlign.left,),
+            SizedBox(
+              height: size.height * 0.03
+            ),
+            Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: size.width * 0.04,
+                    height: size.height * 0.02,
+                    child: SvgPicture.asset('assets/images/quote.svg')
+                  ),
+                  Text('${message}',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,),
+                  Container(
+                      width: size.width * 0.04,
+                      height: size.height * 0.02,
+                      child: SvgPicture.asset('assets/images/quote.svg')
+                  ),
+                ]
             )
+
           ],
         ),
       ),
     );
   }
 }
+
+
