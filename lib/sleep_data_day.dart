@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
 import 'pie_chart.dart';
 
 
 class Daily extends StatelessWidget {
 
   final DateTime chosen;
-  String sleepStartTime = '11:30 PM';
-  String wakeupTime = '8:31 AM';
-  int remSleep = 80;
-  int lightSleep = 143;
-  int deepSleep = 59;
-  int totalSleepDuration = 0;
-  int sleepScore = 100;  // 아직 사용 못함
-  int experiencePoints = 60;
+  final String sleepStartTime = '11:30 PM';
+  final String wakeupTime = '8:31 AM';
+  final int remSleep = 80;
+  final int lightSleep = 143;
+  final int deepSleep = 59;
+  final int totalSleepDuration = 0;
+  final int sleepScore = 100;  // 아직 사용 못함
+  final int experiencePoints = 60;
 
   Daily({
     super.key,

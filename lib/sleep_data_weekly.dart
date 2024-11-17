@@ -79,7 +79,7 @@ class _WeeklyState extends State<Weekly> {
       currentDate = currentDate.add(Duration(days: 1)); // 하루씩 추가
     }
 
-    return dateList.reversed.toList();;
+    return dateList.reversed.toList();
   }
 
   @override
