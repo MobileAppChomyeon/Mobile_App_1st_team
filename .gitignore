@@ -1,0 +1,53 @@
+# macOS 시스템 파일
+.DS_Store
+
+# Flutter 및 Android 빌드 파일
+build/
+android/.gradle/
+android/.idea/
+android/app/build/
+android/local.properties
+android/*.iml
+
+# iOS 빌드 파일
+ios/.DS_Store
+ios/Pods/
+ios/Flutter/App.framework
+ios/Flutter/Flutter.framework
+ios/build/
+ios/*.xcworkspace
+ios/*.xcodeproj/project.xcworkspace/
+ios/Flutter/Generated.xcconfig
+
+# Dart 및 Flutter 특정 파일
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+pubspec.lock
+
+# 로그 및 임시 파일
+*.log
+*.tmp
+*.bak
+*.swp
+*.lock
+
+# JSON 및 특정 파일 무시
+*.json
+
+
+# 특정 예외 사항 (필요 시 추가)
+!important-file.json
+
+# 기타 IDE 파일
+.vscode/
+.idea/
+*.iml
+
+# 테스트 결과 및 임시 파일
+test-output/
+*.coverage
+*.flutter-plugins-dependencies
+*.dart_tool/
+
