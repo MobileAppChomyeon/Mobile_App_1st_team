@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 void main() {
   runApp(const Directionality(
@@ -115,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   // 수면 설정 버튼
                   VerticalIconButton(
-                    icon: CupertinoIcons.gear, // 설정 아이콘
+                    iconName: "gear", // 설정 아이콘
                     label: '수면 설정',
                     onPressed: () {
                       print("수면 설정 버튼 클릭");
@@ -124,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(height: 24), // 버튼 간 간격
                   // 수면 기록 버튼
                   VerticalIconButton(
-                    icon: CupertinoIcons.moon, // 수면 아이콘
+                    iconName: "moon", // 수면 아이콘
                     label: '수면 기록',
                     onPressed: () {
                       print("수면 기록 버튼 클릭");
@@ -133,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(height: 24), // 버튼 간 간격
                   // 도감 버튼
                   VerticalIconButton(
-                    icon: CupertinoIcons.book, // 책 아이콘
+                    iconName: "book", // 책 아이콘
                     label: '도감',
                     onPressed: () {
                       print("도감 버튼 클릭");
@@ -149,8 +150,14 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
+                    SvgPicture.asset(
+                      'assets/icons/dquote1.svg',
+                      width: 10,
+                      height: 10,
+                      fit: BoxFit.contain,
+                    ),
                     Text(
                       sleepComment!,
                       style: const TextStyle(
@@ -159,7 +166,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.black,
                           fontWeight: FontWeight.w300),
                       textAlign: TextAlign.center,
-                    )
+                    ),
+                    SvgPicture.asset(
+                      'assets/icons/dquote2.svg', // SVG 파일 경로
+                      width: 10,
+                      height: 10,
+                      fit: BoxFit.contain,
+                    ),
                   ],
                 ),
                 SizedBox(height: 100)
@@ -173,12 +186,12 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class VerticalIconButton extends StatelessWidget {
-  final IconData icon;
+  final String iconName;
   final String label;
   final VoidCallback onPressed;
 
   VerticalIconButton({
-    required this.icon,
+    required this.iconName,
     required this.label,
     required this.onPressed,
   });
@@ -189,19 +202,20 @@ class VerticalIconButton extends StatelessWidget {
       onTap: onPressed,
       child: Column(
         children: [
-          Icon(
-            icon, //TODO: 아이콘 svg로 변경
-            size: 24,
-            color: Colors.black,
+          SvgPicture.asset(
+            'assets/icons/$iconName.svg', // SVG 파일 경로
+            width: 24, // 아이콘 크기
+            height: 24,
+            color: Colors.black, // 아이콘 색상
           ),
-          SizedBox(height: 8), // 아이콘과 텍스트 간격
+          SizedBox(height: 2), // 아이콘과 텍스트 간격
           Text(
             label,
             style: TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 12,
                 color: Colors.black,
-                fontWeight: FontWeight.w100),
+                fontWeight: FontWeight.w400),
           ),
         ],
       ),
