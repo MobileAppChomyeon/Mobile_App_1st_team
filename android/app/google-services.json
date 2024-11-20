@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "816816653588",
+    "project_id": "mobilechomyeon",
+    "storage_bucket": "mobilechomyeon.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:816816653588:android:ecd075381553dd4deeee01",
+        "android_client_info": {
+          "package_name": "com.example.mobileapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "816816653588-gfg3t75ur2ov71aqtbthmom406ppj850.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvIAhsAwajmDo39y2_H60g-1Mi-pBX-gU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "816816653588-gfg3t75ur2ov71aqtbthmom406ppj850.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "816816653588-2dpmdm6dddaf9ls6n0k3o3tg155790uo.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.mobileapp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
