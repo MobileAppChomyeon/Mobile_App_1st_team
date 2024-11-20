@@ -22,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Login Successful')));
+      Navigator.pop(context); // 팝업 닫기
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(e.toString())));
@@ -48,39 +49,106 @@ class _LoginScreenState extends State<LoginScreen> {
       await FirebaseAuth.instance.signInWithCredential(credential);
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Google Login Successful')));
+      Navigator.pop(context); // 팝업 닫기
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
+  void _showLoginModal(bool isGoogleLogin) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // 전체 화면 모달
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return FractionallySizedBox(
+          heightFactor: 0.9, // 화면 높이의 90% 차지
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      isGoogleLogin ? 'Google 로그인' : '이메일 로그인',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () {
+                        Navigator.pop(context); // 모달 닫기
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: passwordController,
+                  decoration: const InputDecoration(
+                    labelText: 'Password',
+                    border: OutlineInputBorder(),
+                  ),
+                  obscureText: true,
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  onPressed: isGoogleLogin ? _loginWithGoogle : _loginWithEmail,
+                  child: Text(
+                    isGoogleLogin ? 'Google 로그인 실행' : '이메일 로그인 실행',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(
+        title: const Text('Login'),
+        backgroundColor: Colors.white,
+      ),
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+            const Text(
+              '초면: 草眠',
+              style: TextStyle(fontSize: 40),
             ),
-            TextField(
-              controller: passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
+            const Text('건강한 수면으로 키우는 초록 친구'),
+            Image.asset("assets/images/app_logo.png"),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _loginWithEmail,
-              child: const Text('Login with Email'),
-            ),
-            ElevatedButton(
-              onPressed: _loginWithGoogle,
-              child: const Text('Login with Google'),
-            ),
             TextButton(
               onPressed: () {
                 Navigator.push(
@@ -88,7 +156,32 @@ class _LoginScreenState extends State<LoginScreen> {
                   MaterialPageRoute(builder: (context) => const RegisterScreen()),
                 );
               },
-              child: const Text('Don\'t have an account? Register'),
+              child: const Text('이메일로 회원가입하기',style: TextStyle(color: Colors.grey),),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                minimumSize: const Size.fromHeight(50),
+                side: BorderSide(color: Colors.black,width: 1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              onPressed: () => _showLoginModal(true), // Google 로그인 모달
+              child: const Text('Google 로그인',style: TextStyle(color: Colors.black),),
+            ),
+            SizedBox(height: 10,),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                minimumSize: const Size.fromHeight(50),
+                // side: BorderSide(color: Colors.black,width: 2),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              onPressed: () => _showLoginModal(false), // 이메일 로그인 모달
+              child: const Text('이메일 로그인',style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
