@@ -1,56 +1,63 @@
 import 'package:flutter/material.dart';
 
+
 class PlantBook extends StatelessWidget {
   const PlantBook({super.key});
 
-  final List<Map<String, String>> plantData = const [
+  final List<Map<String, String?>> plantData = const [
     {
       'nickname': '요미미',
       'species': '포인세티아',
       'startDate': '23.10.01',
-      'endDate': '23.11.12'
+      'endDate': null,
+      'silhouetteImage': 'assets/flower/s1.png',
+      'completeImage': 'assets/flower/s1_com.png',
     },
     {
-      'nickname': '선인장',
-      'species': '사막의 친구',
-      'startDate': '23.09.10',
-      'endDate': '23.10.15'
+      'nickname': null,
+      'species': null,
+      'startDate': null,
+      'endDate': null,
+      'silhouetteImage': 'assets/flower/s1.png',
+      'completeImage': 'assets/flower/s1_com.png',
     },
     {
       'nickname': '장미',
       'species': '붉은 장미',
       'startDate': '23.08.01',
-      'endDate': '23.09.12'
+      'endDate': '23.09.12',
+      'silhouetteImage': 'assets/flower/s1.png',
+      'completeImage': 'assets/flower/s1_com.png',
     },
     {
       'nickname': '라벤더',
       'species': '향기로운 허브',
       'startDate': '23.07.05',
       'endDate': '23.08.20',
+      'silhouetteImage': 'assets/flower/s1.png',
+      'completeImage': 'assets/flower/s1_com.png',
     },
     {
-      'nickname': '바질',
-      'species': '요리의 동반자',
-      'startDate': '23.06.15',
-      'endDate': '23.07.25',
-    },
-    {
-      'nickname': '튤립',
-      'species': '봄의 전령',
-      'startDate': '23.03.20',
-      'endDate': '23.04.30',
-    },
-    {
-      'nickname': '무궁화',
-      'species': '한국의 꽃',
-      'startDate': '23.02.10',
-      'endDate': '23.03.20',
-    },
-    {
-      'nickname': '벚꽃',
-      'species': '사쿠라',
-      'startDate': '23.04.01',
-      'endDate': '23.05.01',
+      'nickname': null,
+      'species': null,
+      'startDate': null,
+      'endDate': null,
+      'silhouetteImage': 'assets/flower/s1.png',
+      'completeImage': 'assets/flower/s1_com.png',
+    },{
+      'nickname': null,
+      'species': null,
+      'startDate': null,
+      'endDate': null,
+      'silhouetteImage': 'assets/flower/s1.png',
+      'completeImage': 'assets/flower/s1_com.png',
+    },{
+      'nickname': null,
+      'species': null,
+      'startDate': null,
+      'endDate': null,
+      'silhouetteImage': 'assets/flower/s1.png',
+      'completeImage': 'assets/flower/s1_com.png',
     },
   ];
 
@@ -70,68 +77,136 @@ class PlantBook extends StatelessWidget {
         elevation: 0,
       ),
       body: GridView.builder(
-        padding: const EdgeInsets.only(left: 30.0, right: 30, top: 15, bottom: 30),
+        padding: const EdgeInsets.all(15.0),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-
+          crossAxisSpacing: 15,
+          mainAxisSpacing: 15,
         ),
         itemCount: plantData.length,
         itemBuilder: (context, index) {
           final plant = plantData[index];
-          return _buildPlantBookCard(
-            context,
-            plant['nickname']!,
-            plant['species']!,
-            plant['startDate']!,
-            plant['endDate']!,
-          );
+          return _buildPlantBookCard(context, plant);
         },
       ),
     );
   }
 
-  Widget _buildPlantBookCard(
-      BuildContext context,
-      String nickname,
-      String species,
-      String startDate,
-      String endDate,
-      ) {
+  Widget _buildPlantBookCard(BuildContext context, Map<String, String?> plant) {
+    final isCompleted = plant['endDate'] != null;
+    final isCurrent = plant['nickname'] != null && plant['endDate'] == null; // "지금 키우고 있어요!" 조건
+    final imagePath =
+    isCompleted ? plant['completeImage']! : plant['silhouetteImage']!;
+
     return GestureDetector(
       onTap: () {
-        _showPlantBookDetail(context, nickname, species, startDate, endDate);
+        _showPlantBookDetail(context, plant);
       },
-      child: SizedBox(
-        width: 130,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 130,
-              height: 130,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(12),
+      child: Stack(
+        alignment: Alignment.topCenter,
+        children: [
+          Container(
+            width: 140,
+            height: 140,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              // color: Colors.yellow,
+              image: DecorationImage(
+                image: AssetImage(imagePath),
+                fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              nickname,
+          ),
+          if (isCompleted) // 다 키운 식물 표시
+            Positioned(
+              top: 8,
+              left: 10,
+              child: Container(
+                alignment: Alignment.center, // 텍스트 중앙 정렬
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Stack(
+                  children: [
+                    // 아래 텍스트: 테두리 역할
+                    Text(
+                      plant['endDate']!,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                        foreground: Paint()
+                          ..style = PaintingStyle.stroke
+                          ..strokeWidth = 5 // 테두리 두께
+                          ..color = Colors.white.withAlpha(180), // 테두리 색상
+                      ),
+                    ),
+                    // 위 텍스트: 실제 텍스트
+                    Text(
+                      plant['endDate']!,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                        color: Color(0xFF4A6FA5), // 텍스트 색상
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          if (isCurrent) // 현재 키우고 있는 식물 표시
+            Positioned(
+              top: 8,
+              left: 10,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  // color: Colors.green[200],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Stack(
+                  children: [
+                    Text(
+                    '지금 키우고 있어요!',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.normal,
+                      foreground: Paint()
+                        ..style = PaintingStyle.stroke
+                        ..strokeWidth = 5 // 테두리 두께
+                        ..color = Colors.white.withAlpha(180),),
+                  ),
+                    const Text(
+                      '지금 키우고 있어요!',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                        color: Color(0xFF4A6FA5), // 텍스트 색상
+                      ),
+                    ),
+                  ]
+                ),
+              ),
+            ),
+          Positioned(
+            bottom: 13,
+            left: 0,
+            right: 0,
+            child: Text(
+              plant['nickname'] ?? '???',
+              textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 16),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  static void _showPlantBookDetail(
-      BuildContext context,
-      String nickname,
-      String species,
-      String startDate,
-      String endDate,
-      ) {
+  void _showPlantBookDetail(BuildContext context, Map<String, String?> plant) {
+    final isCompleted = plant['endDate'] != null;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -140,44 +215,54 @@ class PlantBook extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
           child: Padding(
-            padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 20, bottom: 20),
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 120,
-                  height: 120,
+                  width: 140,
+                  height: 140,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
                     borderRadius: BorderRadius.circular(12),
+                    image: DecorationImage(
+                      image: AssetImage(
+                        isCompleted
+                            ? plant['completeImage']!
+                            : plant['silhouetteImage']!,
+                      ),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  '이름: $nickname',
+                  '이름: ${plant['nickname'] ?? '???'}',
                   style: const TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '종류: $species',
+                  '종류: ${plant['species'] ?? '???'}',
                   style: const TextStyle(fontSize: 16),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  '만난 날짜: $startDate',
-                  style: const TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '다 키운 날짜: $endDate',
-                  style: const TextStyle(fontSize: 16),
-                ),
+                if (plant['startDate'] != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    '만난 날짜: ${plant['startDate']}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+                if (plant['endDate'] != null)...[
+                  const SizedBox(height: 8),
+                  Text(
+                    '다 키운 날짜: ${plant['endDate']}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
                 const SizedBox(height: 30),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFB4C7E7),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 30, vertical: 13),
+                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 13),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),

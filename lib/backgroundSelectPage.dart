@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mobileapp/home_screen.dart';
+import 'home_screen.dart';
 
 class BackgroundSelectPage extends StatefulWidget {
   final String plantNickname;
@@ -161,6 +163,8 @@ class _BackgroundSelectPageState extends State<BackgroundSelectPage> {
                 final selectedBackground = _backgroundData[_currentPage];
                 print('선택된 배경: ${selectedBackground['title']}');
                 Navigator.pop(context, selectedBackground);
+                Navigator.push(context,
+                MaterialPageRoute(builder: (context) => HomeScreen()));
               },
               child: const Text(
                 '선택하기',
