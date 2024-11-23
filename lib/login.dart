@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'register.dart';
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -111,6 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
+                    backgroundColor: Color.fromRGBO(82, 110, 160, 1.0),
                     minimumSize: const Size.fromHeight(50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
@@ -119,6 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: isGoogleLogin ? _loginWithGoogle : _loginWithEmail,
                   child: Text(
                     isGoogleLogin ? 'Google 로그인 실행' : '이메일 로그인 실행',
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
               ],
@@ -133,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
+        // title: const Text('Login'),
         backgroundColor: Colors.white,
       ),
       backgroundColor: Colors.white,
@@ -142,11 +143,12 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              '초면: 草眠',
-              style: TextStyle(fontSize: 40),
-            ),
-            const Text('건강한 수면으로 키우는 초록 친구'),
+            Image.asset('assets/images/hanja.png'),
+            // const Text(
+            //   '초면: 草眠',
+            //   style: TextStyle(fontSize: 40),
+            // ),
+            const Text('건강한 수면으로 키우는 초록 친구',style: TextStyle(fontFamily: "Pretendard",fontWeight:FontWeight.w400,fontSize: 14,color: Colors.black ),),
             Image.asset("assets/images/app_logo.png"),
             const SizedBox(height: 20),
             TextButton(
@@ -156,8 +158,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   MaterialPageRoute(builder: (context) => const RegisterScreen()),
                 );
               },
-              child: const Text('이메일로 회원가입하기',style: TextStyle(color: Colors.grey),),
+              child: const Text('이메일로 회원가입하기',style: TextStyle(fontFamily: "Pretendard",fontWeight:FontWeight.w400,fontSize: 16,color: Colors.grey)),
             ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromRGBO(82, 110, 160, 1.0),
+                minimumSize: const Size.fromHeight(50),
+                // side: BorderSide(color: Colors.black,width: 2),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              onPressed: () => _showLoginModal(false), // 이메일 로그인 모달
+              child: const Text('이메일 로그인',style: TextStyle(fontFamily: "Pretendard",fontWeight:FontWeight.w400,fontSize: 20,color: Colors.white)),
+            ),
+
+            SizedBox(height: 10,),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
@@ -168,21 +184,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               onPressed: () => _showLoginModal(true), // Google 로그인 모달
-              child: const Text('Google 로그인',style: TextStyle(color: Colors.black),),
-            ),
-            SizedBox(height: 10,),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                minimumSize: const Size.fromHeight(50),
-                // side: BorderSide(color: Colors.black,width: 2),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
+              child: Stack(
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Image.asset('assets/images/google_logo.png'),
+                  ),
+                  Center(
+                    child: const Text('Google 로그인',style: TextStyle(fontFamily: "Pretendard",fontWeight:FontWeight.w400,fontSize: 20,color: Colors.black),),
+                  ),
+                ],
               ),
-              onPressed: () => _showLoginModal(false), // 이메일 로그인 모달
-              child: const Text('이메일 로그인',style: TextStyle(color: Colors.white)),
             ),
+
           ],
         ),
       ),
