@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'plantBook.dart';
+import 'goalSetting.dart';
+import 'weeklySleepData.dart';
 
 // void main() {
 //   runApp(const Directionality(
@@ -122,7 +124,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     iconName: "gear", // 설정 아이콘
                     label: '수면 설정',
                     onPressed: () {
-                      print("수면 설정 버튼 클릭");
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => GoalSetting(),
+                        ),
+                      );
                     },
                   ),
                   SizedBox(height: 24), // 버튼 간 간격
@@ -131,7 +138,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     iconName: "moon", // 수면 아이콘
                     label: '수면 기록',
                     onPressed: () {
-                      print("수면 기록 버튼 클릭");
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Weekly(),
+                        ),
+                      );
                     },
                   ),
                   SizedBox(height: 24), // 버튼 간 간격
