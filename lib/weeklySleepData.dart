@@ -49,9 +49,9 @@ class _WeeklyState extends State<Weekly> {
     List<DateTime> dateList = generateDateList(startDate);
 
     return Scaffold(
-      // backgroundColor: Colors.white,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        // backgroundColor: Colors.white,
+        backgroundColor: Colors.white,
         leading: IconButton(
             onPressed: () {
               Navigator.pop(context);

@@ -7,6 +7,7 @@ class PlantSelect extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
@@ -18,18 +19,18 @@ class PlantSelect extends StatelessWidget {
                 '오늘부터 키워볼 식물을 골라볼까요?',
                 style: TextStyle(
                   color: Colors.black,
-                  fontSize: 21,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 15),
               const Text(
                 '식물 하나를 다 키우면 또 다른 식물을 키울 수 있으니\n걱정 말고 마음에 드는 친구를 골라주세요',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14.5, color: Colors.black),
+                style: TextStyle(fontSize: 16, color: Colors.black),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 50),
               Wrap(
                 spacing: 30,
                 runSpacing: 30,
@@ -79,6 +80,7 @@ class PlantSelect extends StatelessWidget {
         context: context,
         builder: (BuildContext context) {
           return Dialog(
+            backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -103,7 +105,7 @@ class PlantSelect extends StatelessWidget {
                     Text(
                       plantName,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -111,7 +113,7 @@ class PlantSelect extends StatelessWidget {
                     Text(
                       description,
                       textAlign:  TextAlign.center,
-                      style: const TextStyle(fontSize: 14),
+                      style: const TextStyle(fontSize: 16),
                     ),
                     const SizedBox(height: 20),
                     Row(
@@ -127,6 +129,7 @@ class PlantSelect extends StatelessWidget {
                             ),
                             textStyle: const TextStyle(
                               fontWeight: FontWeight.w100,
+                              fontSize: 16,
                             ),
                             minimumSize: const Size(110, 40),
                           ),
@@ -148,6 +151,7 @@ class PlantSelect extends StatelessWidget {
                             ),
                             textStyle: const TextStyle(
                               fontWeight: FontWeight.w100,
+                              fontSize: 16,
                             ),
                             minimumSize: const Size(110, 40),
                           ),

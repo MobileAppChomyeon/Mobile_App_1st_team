@@ -72,11 +72,13 @@ class PlantSelectAgain extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         // leading: IconButton(
         //   onPressed: () => Navigator.pop(context),
         //   icon: const Icon(Icons.arrow_back_ios),
         // ),
+        backgroundColor: Colors.white,
         title: const Text(
           '식물 목록',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),

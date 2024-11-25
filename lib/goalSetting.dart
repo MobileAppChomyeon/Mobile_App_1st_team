@@ -65,9 +65,9 @@ class _GoalSettingState extends State<GoalSetting> {
     final Size size = MediaQuery.of(context).size;
 
     return Scaffold(
-        // backgroundColor: Colors.white,
+        backgroundColor: Colors.white,
         appBar: AppBar(
-          // backgroundColor: Colors.white,
+          backgroundColor: Colors.white,
           leading: IconButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -87,6 +87,7 @@ class _GoalSettingState extends State<GoalSetting> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      SizedBox(height:size.height*0.05),
                       const Text('현재 수면 목표', style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w300,
@@ -102,12 +103,13 @@ class _GoalSettingState extends State<GoalSetting> {
               SizedBox(height:size.height*0.06),
               Container(
                 padding: EdgeInsets.fromLTRB(
-                    size.width * 0.13, size.height * 0.04, size.width * 0.13, size.height * 0.04),
+                    size.width * 0.13, size.height * 0.03, size.width * 0.13, size.height * 0.04),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     Column(
                       children: [
+                        SizedBox(height:size.height * 0.01),
                         TextButton(
                           style: TextButton.styleFrom(
                             alignment: Alignment.centerRight,
@@ -119,6 +121,7 @@ class _GoalSettingState extends State<GoalSetting> {
                             fontWeight: FontWeight.w600,
                           )),
                         ),
+                        SizedBox(height:size.height * 0.01),
                         TextButton(
                           style: TextButton.styleFrom(
                             alignment: Alignment.centerRight,
@@ -176,7 +179,7 @@ class _GoalSettingState extends State<GoalSetting> {
                   fontWeight: FontWeight.w300,
                 ),),
               ),
-              SizedBox(height:size.height*0.19),
+              SizedBox(height:size.height*0.21),
               ElevatedButton(
                 onPressed: (){
                   setState((){
