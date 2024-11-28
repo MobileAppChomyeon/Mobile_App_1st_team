@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'register.dart';
+import 'home_screen.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -21,7 +22,12 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Login Successful')));
-      Navigator.pop(context); // 팝업 닫기
+
+      // Navigate to HomeScreen after successful login
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(e.toString())));
@@ -34,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {
-        return; // 사용자가 로그인 취소
+        return; // User cancelled login
       }
 
       final GoogleSignInAuthentication googleAuth =
@@ -48,12 +54,18 @@ class _LoginScreenState extends State<LoginScreen> {
       await FirebaseAuth.instance.signInWithCredential(credential);
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Google Login Successful')));
-      Navigator.pop(context); // 팝업 닫기
+
+      // Navigate to HomeScreen after successful login
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
+
 
   void _showLoginModal(bool isGoogleLogin) {
     showModalBottomSheet(
