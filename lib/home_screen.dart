@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'sleepdata_fetcher.dart';
 
 void main() {
-  runApp(const Directionality(
-      textDirection: TextDirection.ltr, child: HomeScreen()));
+  runApp(MaterialApp(
+    debugShowCheckedModeBanner: false, // 디버그 배너 제거 (선택 사항)
+    home: HomeScreen(),
+  ));
 }
 
 class HomeScreen extends StatefulWidget {
@@ -15,8 +17,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final SleepDataFetcher _sleepDataFetcher = SleepDataFetcher();
+  bool _isAuthorized = false;
+  String _sleepDataText = '데이터 로딩 중...';
+
   String? backgroundImage;
-  String? flowerImage;
+  String? plantImage;
   String? plantName = '무리무리';
   String? sleepComment;
   final int totalSleepDuration = 8; // 총 경험치
@@ -26,8 +32,101 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     backgroundImage = 'assets/background/morning.png';
-    flowerImage = 'assets/flower/daisy/daisy4.png';
+    plantImage = 'assets/flower/daisy/daisy4.png';
     sleepComment = "어느정도 주무셨군요!\n오늘은 조금 더 일찍 잠에 들어 보세요";
+    _initialize();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && totalSleepDuration >= 1.0) {
+        // 경험치 최대치되면!!
+        _showPlantPopup();
+      }
+    });
+  }
+
+  void _showPlantPopup() {
+    DateTime now = DateTime.now();
+    int daysTaken = 30; // now.difference(startDate).inDays; // 걸린 날짜 계산
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 식물 이미지
+              Image.asset(
+                plantImage!,
+                width: 100,
+                height: 100,
+              ),
+              const SizedBox(height: 20),
+              // 메시지
+              Text(
+                "식물이 다 자랐어요!",
+                style: TextStyle(
+                  fontFamily: "Pretendard",
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                "$plantName(을/를) 다 키우는데\n총 $daysTaken일이 걸렸어요\n잘 키워줘서 고마워요",
+                style: TextStyle(
+                  fontFamily: "Pretendard",
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                "다음 식물을 만나러 갈까요?",
+                style: TextStyle(
+                  fontFamily: "Pretendard",
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              // 만나러가기 버튼
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context); // 팝업 닫기
+                  print("다음 페이지로 이동!");
+                  //Navigator.push(
+                  //  context,
+                  //  MaterialPageRoute(
+                  //    builder: (context) => NextScreen(),
+                  //  ),
+                  //); // 다른 화면으로 이동
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4A6FA5), // 버튼 색상
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(
+                  "만나러가기",
+                  style: TextStyle(
+                    fontFamily: "Pretendard",
+                    fontSize: 14,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   }
 
   @override
@@ -159,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       fit: BoxFit.contain,
                     ),
                     Text(
-                      sleepComment!,
+                      _isAuthorized ? _sleepDataText : "권한 허용 필요",
                       style: const TextStyle(
                           fontFamily: 'Pretendard',
                           fontSize: 14,
@@ -175,7 +274,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                 ),
-                SizedBox(height: 100)
+                const SizedBox(height: 100)
               ],
             ),
           )
@@ -190,7 +289,8 @@ class VerticalIconButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
 
-  VerticalIconButton({
+  const VerticalIconButton({
+    super.key,
     required this.iconName,
     required this.label,
     required this.onPressed,
@@ -208,10 +308,10 @@ class VerticalIconButton extends StatelessWidget {
             height: 24,
             color: Colors.black, // 아이콘 색상
           ),
-          SizedBox(height: 2), // 아이콘과 텍스트 간격
+          const SizedBox(height: 2), // 아이콘과 텍스트 간격
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 12,
                 color: Colors.black,
@@ -226,7 +326,7 @@ class VerticalIconButton extends StatelessWidget {
 class PlantRoomName extends StatelessWidget {
   final String plantName;
 
-  const PlantRoomName({Key? key, required this.plantName}) : super(key: key);
+  const PlantRoomName({super.key, required this.plantName});
 
   @override
   Widget build(BuildContext context) {
