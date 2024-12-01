@@ -9,6 +9,11 @@ void main() {
   ));
 }
 
+//void main() {
+//  runApp(const Directionality(
+//      textDirection: TextDirection.ltr, child: HomeScreen()));
+//}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -127,6 +132,30 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _initialize() async {
+    bool isAuthorized = await _sleepDataFetcher.requestPermissions();
+
+    setState(() {
+      _isAuthorized = isAuthorized;
+    });
+
+    if (isAuthorized) {
+      final now = DateTime.now();
+      final oneWeekAgo = now.subtract(const Duration(days: 7));
+      final sleepData = await _sleepDataFetcher.fetchSleepData(oneWeekAgo, now);
+
+      setState(() {
+        if (sleepData.isEmpty) {
+          _sleepDataText = '수면 데이터가 없습니다';
+        } else {
+          print('수면 데이터: $sleepData'); // 디버깅용 로그
+          _sleepDataText = sleepData
+              .map((data) =>
+                  '${data.type} ${data.dateFrom.month}/${data.dateFrom.day}${data.dateFrom.hour}:${data.dateFrom.minute} - ${data.dateTo.month}/${data.dateTo.day}${data.dateTo.hour}:${data.dateTo.minute}')
+              .join('\n');
+        }
+      });
+    }
   }
 
   @override
@@ -200,10 +229,16 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          Center(
-            child: Positioned(
-              bottom: 200,
-              child: Image.asset(flowerImage!),
+          Positioned(
+            bottom: 200,
+            left: 0,
+            right: 0,
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width, // 화면 가로 크기
+              child: Image.asset(
+                plantImage!,
+                fit: BoxFit.fitWidth, // 가로 크기에 맞춰서 비율 유지
+              ),
             ),
           ),
           Align(
@@ -221,7 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       print("수면 설정 버튼 클릭");
                     },
                   ),
-                  SizedBox(height: 24), // 버튼 간 간격
+                  const SizedBox(height: 24), // 버튼 간 간격
                   // 수면 기록 버튼
                   VerticalIconButton(
                     iconName: "moon", // 수면 아이콘
@@ -230,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       print("수면 기록 버튼 클릭");
                     },
                   ),
-                  SizedBox(height: 24), // 버튼 간 간격
+                  const SizedBox(height: 24), // 버튼 간 간격
                   // 도감 버튼
                   VerticalIconButton(
                     iconName: "book", // 책 아이콘
