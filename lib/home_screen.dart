@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mobileapp/plantSelect.dart';
 import 'plantBook.dart';
 import 'goalSetting.dart';
 import 'weeklySleepData.dart';
+import 'plantSelectAgain.dart';
 
 // void main() {
 //   runApp(const Directionality(
@@ -113,12 +115,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: () {
                   Navigator.pop(context); // 팝업 닫기
                   print("다음 페이지로 이동!");
-                  //Navigator.push(
-                  //  context,
-                  //  MaterialPageRoute(
-                  //    builder: (context) => NextScreen(),
-                  //  ),
-                  //); // 다른 화면으로 이동
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PlantSelectAgain(),
+                    ),
+                  ); // 다른 화면으로 이동
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4A6FA5), // 버튼 색상
