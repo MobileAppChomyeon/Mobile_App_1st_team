@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.example.mobileapp"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 34//flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -24,8 +24,8 @@ android {
 
     defaultConfig {
         applicationId = "com.example.mobileapp"
-        minSdkVersion 23 // flutter.minSdkVersion 대신 명시적으로 23 지정
-        targetSdkVersion flutter.targetSdkVersion
+        minSdkVersion 26 // flutter.minSdkVersion 대신 명시적으로 26 지정
+        targetSdkVersion 34 // flutter.targetSdkVersion 대신 명시적으로 34 지정
         versionCode flutter.versionCode
         versionName flutter.versionName
     }
@@ -37,6 +37,14 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
+}
+
+dependencies {
+    implementation "androidx.health.connect:connect-client:1.1.0-alpha01"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.1"
+    implementation 'com.google.android.gms:play-services-auth:20.6.0'
+    implementation 'com.google.android.gms:play-services-fitness:21.1.0'
 }
 
 flutter {

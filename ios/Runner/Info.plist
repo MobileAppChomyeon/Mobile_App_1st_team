@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>유저의 건강 데이터를 동기화하고 수면 정보를 가져오기 위해 사용합니다.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>유저의 건강 데이터를 가져오기 위해 사용합니다.</string>
 </dict>
 </plist>
