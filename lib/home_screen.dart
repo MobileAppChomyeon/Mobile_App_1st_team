@@ -161,10 +161,11 @@ class _HomeScreenState extends State<HomeScreen> {
           _sleepDataText = '수면 데이터가 없습니다';
         } else {
           print('수면 데이터: $sleepData'); // 디버깅용 로그
-          _sleepDataText = sleepData
-              .map((data) =>
-                  '${data.type} ${data.dateFrom.month}/${data.dateFrom.day}${data.dateFrom.hour}:${data.dateFrom.minute} - ${data.dateTo.month}/${data.dateTo.day}${data.dateTo.hour}:${data.dateTo.minute}')
-              .join('\n');
+          _sleepDataText = '11';
+              // sleepData
+              // .map((data) =>
+              //     '${data.type} ${data.dateFrom.month}/${data.dateFrom.day}${data.dateFrom.hour}:${data.dateFrom.minute} - ${data.dateTo.month}/${data.dateTo.day}${data.dateTo.hour}:${data.dateTo.minute}')
+              // .join('\n');
         }
       });
     }
