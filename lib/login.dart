@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'register.dart';
 import 'home_screen.dart';
 import 'plantSelect.dart';
@@ -14,66 +14,56 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  Future<void> checkPlantNickname() async {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      print('User not logged in');
-      return;
-    }
-
-    final plantRef = _db
-        .collection('Users')
-        .doc(user.uid)
-        .collection('Plants')
-        .doc('currentPlant');
-
+  Future<void> _navigateBasedOnUserInfo(User user) async {
     try {
-      final plantDoc = await plantRef.get();
+      // 현재 사용자의 Firestore 문서 참조
+      final currentPlantDoc = await FirebaseFirestore.instance
+          .collection('Users') // Users 컬렉션
+          .doc(user.uid) // userId 문서
+          .collection('Plants') // Plants 서브컬렉션
+          .doc('currentPlant') // currentPlant 문서
+          .get();
 
-      if (plantDoc.exists) {
-        final nickname = plantDoc.data()?['nickname'];
-        if (nickname != null && nickname.isNotEmpty) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomeScreen()),
-          );
-        } else {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => PlantSelect()),
-          );
-        }
-      } else {
+      // nickname 필드 확인
+      if (currentPlantDoc.exists && currentPlantDoc.data()?['nickname'] != null) {
+        // nickname 존재 -> HomeScreen으로 이동
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => PlantSelect()),
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else {
+        // nickname 없음 -> PlantSelect로 이동
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const PlantSelect()),
         );
       }
     } catch (e) {
-      print('Error checking plant nickname: $e');
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => PlantSelect()),
-      );
+      // 오류 처리
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
+
   Future<void> _loginWithEmail() async {
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text,
       );
-      await checkPlantNickname(); // 로그인 성공 후 닉네임 확인
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Login Successful')));
+
+      // 로그인 후 화면 전환
+      await _navigateBasedOnUserInfo(credential.user!);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
@@ -94,23 +84,28 @@ class _LoginScreenState extends State<LoginScreen> {
         idToken: googleAuth.idToken,
       );
 
+      final userCredential =
       await FirebaseAuth.instance.signInWithCredential(credential);
-      await checkPlantNickname(); // 로그인 성공 후 닉네임 확인
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Google Login Successful')));
+
+      // 로그인 후 화면 전환
+      await _navigateBasedOnUserInfo(userCredential.user!);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
   void _showLoginModal(bool isGoogleLogin) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
+      isScrollControlled: true, // 전체 화면 모달
       backgroundColor: Colors.transparent,
       builder: (context) {
         return FractionallySizedBox(
-          heightFactor: 0.9,
+          heightFactor: 0.9, // 화면 높이의 90% 차지
           child: Container(
             padding: const EdgeInsets.all(20),
             decoration: const BoxDecoration(
@@ -133,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     IconButton(
                       icon: const Icon(Icons.close),
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.pop(context); // 모달 닫기
                       },
                     ),
                   ],
@@ -180,18 +175,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.of(context).size; // 화면 크기 가져오기
 
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.white),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+      ),
       backgroundColor: Colors.white,
       body: Padding(
-        padding: EdgeInsets.all(size.width * 0.04),
+        padding: EdgeInsets.all(size.width * 0.04), // 너비의 4%를 패딩으로 설정
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset('assets/images/hanja.png'),
-            SizedBox(height: size.height * 0.02),
+            SizedBox(height: size.height * 0.02), // 높이의 2% 간격
             const Text(
               '건강한 수면으로 키우는 초록 친구',
               style: TextStyle(
@@ -202,10 +199,10 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             SizedBox(
-              height: size.height * 0.4,
+              height: size.height * 0.4, // 높이의 15%
               child: Image.asset('assets/images/app_logo.png'),
             ),
-            SizedBox(height: size.height * 0.03),
+            SizedBox(height: size.height * 0.03), // 높이의 3% 간격
             TextButton(
               onPressed: () {
                 Navigator.push(
@@ -227,12 +224,12 @@ class _LoginScreenState extends State<LoginScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color.fromRGBO(82, 110, 160, 1.0),
-                minimumSize: Size.fromHeight(size.height * 0.06),
+                minimumSize: Size.fromHeight(size.height * 0.06), // 너비의 80%, 높이의 6%
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              onPressed: () => _showLoginModal(false),
+              onPressed: () => _showLoginModal(false), // 이메일 로그인 모달
               child: const Text(
                 '이메일 로그인',
                 style: TextStyle(
@@ -243,7 +240,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-            SizedBox(height: size.height * 0.01),
+            SizedBox(height: size.height * 0.01), // 높이의 2% 간격
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
@@ -253,15 +250,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              onPressed: () => _showLoginModal(true),
+              onPressed: () => _showLoginModal(true), // Google 로그인 모달
               child: Stack(
                 children: [
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Image.asset('assets/images/google_logo.png'),
                   ),
-                  const Center(
-                    child: Text(
+                  Center(
+                    child: const Text(
                       'Google 로그인',
                       style: TextStyle(
                         fontFamily: "Pretendard",
