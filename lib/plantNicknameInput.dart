@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'backgroundSelectPage.dart';
+import 'userData.dart'; // userData.dart를 올바르게 import
 
 class PlantNicknameInputPage extends StatefulWidget {
   const PlantNicknameInputPage({super.key});
@@ -11,6 +12,9 @@ class PlantNicknameInputPage extends StatefulWidget {
 class _PlantNicknameInputPageState extends State<PlantNicknameInputPage> {
   final TextEditingController _plantNicknameController = TextEditingController();
   bool isButtonEnabled = false;
+
+  // UserDataService 객체 생성
+  final UserDataService _userDataService = UserDataService();
 
   @override
   Widget build(BuildContext context) {
@@ -95,15 +99,34 @@ class _PlantNicknameInputPageState extends State<PlantNicknameInputPage> {
               SizedBox(height: size.height * 0.2),
               ElevatedButton(
                 onPressed: isButtonEnabled
-                    ? () {
+                    ? () async {
                   final plantNickname = _plantNicknameController.text;
-                  print('식물 이름 설정됨');
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BackgroundSelectPage(plantNickname: plantNickname),
-                    ),
-                  );
+                  try {
+                    // 식물 정보를 Firestore에 저장
+                    await _userDataService.savePlantInfo(
+                      nickname: plantNickname,
+                      startDate: DateTime.now(), // 현재 시간
+                      endDate: null, // 아직 완료되지 않았으므로 null
+                      status: 'growing', // 상태는 growing
+                      growthStage: 'sprout', // 성장 단계는 sprout
+                      imageUrl: 'your_image_url_here', // 이미지 URL은 필요한 곳에서 넣기
+                    );
+
+                    print('식물 정보 설정됨');
+
+                    // BackgroundSelectPage로 이동
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BackgroundSelectPage(plantNickname: plantNickname),
+                      ),
+                    );
+                  } catch (e) {
+                    print('식물 정보 저장 실패: $e');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('식물 정보 저장 실패: $e')),
+                    );
+                  }
                 }
                     : null,
                 style: ElevatedButton.styleFrom(

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'register.dart';
 import 'home_screen.dart';
+import 'plantSelect.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -26,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // Navigate to HomeScreen after successful login
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const PlantSelect()),
       );
     } catch (e) {
       ScaffoldMessenger.of(context)
