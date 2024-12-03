@@ -5,8 +5,8 @@
 import FlutterMacOS
 import Foundation
 
-import device_info_plus
 import cloud_firestore
+import device_info_plus
 import firebase_auth
 import firebase_core
 import google_sign_in_ios
