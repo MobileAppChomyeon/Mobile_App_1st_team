@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'piechart.dart';
 
-
 class Daily extends StatelessWidget {
-
   final DateTime chosen;
   final String sleepStartTime = '11:30 PM';
   final String wakeupTime = '8:31 AM';
@@ -12,7 +10,7 @@ class Daily extends StatelessWidget {
   final int lightSleep = 143;
   final int deepSleep = 59;
   int totalSleepDuration = 0;
-  final int sleepScore = 100;  // 아직 사용 못함
+  final int sleepScore = 100; // 아직 사용 못함
   final int experiencePoints = 60;
 
   Daily({
@@ -45,8 +43,10 @@ class Daily extends StatelessWidget {
     bool isStartPM = startTime.contains('PM');
     bool isEndPM = endTime.contains('PM');
 
-    DateTime start = parseTime(startTime.replaceAll(RegExp(r'[APap][Mm]'), '').trim(), isStartPM);
-    DateTime end = parseTime(endTime.replaceAll(RegExp(r'[APap][Mm]'), '').trim(), isEndPM);
+    DateTime start = parseTime(
+        startTime.replaceAll(RegExp(r'[APap][Mm]'), '').trim(), isStartPM);
+    DateTime end = parseTime(
+        endTime.replaceAll(RegExp(r'[APap][Mm]'), '').trim(), isEndPM);
 
     if (end.isBefore(start)) end = end.add(Duration(days: 1));
 
@@ -54,10 +54,8 @@ class Daily extends StatelessWidget {
     return difference.inMinutes;
   }
 
-
   @override
   Widget build(BuildContext context) {
-
     final Size size = MediaQuery.of(context).size;
     String message = '어느 정도 주무셨군요!\n 오늘은 조금 더 일찍 잠 들어 보세요';
     totalSleepDuration = calculateDuration(sleepStartTime, wakeupTime);
@@ -69,18 +67,25 @@ class Daily extends StatelessWidget {
         leading: IconButton(
             onPressed: () {
               Navigator.pop(context);
-            }, icon: const Icon(Icons.arrow_back_ios)),
-        title: Text("수면 기록", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),),
+            },
+            icon: const Icon(Icons.arrow_back_ios)),
+        title: Text(
+          "수면 기록",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         centerTitle: true,
       ),
       body: Padding(
-        padding: EdgeInsets.fromLTRB(size.width * 0.08, size.height * 0.01, size.width * 0.08, size.height * 0.01),
+        padding: EdgeInsets.fromLTRB(size.width * 0.08, size.height * 0.01,
+            size.width * 0.08, size.height * 0.01),
         child: Center(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("${chosen.month}월 ${chosen.day}일의 수면 기록",
-                  style: TextStyle(fontWeight: FontWeight.normal, fontSize: 19),),
+              Text(
+                "${chosen.month}월 ${chosen.day}일의 수면 기록",
+                style: TextStyle(fontWeight: FontWeight.normal, fontSize: 19),
+              ),
               SizedBox(height: size.height * 0.02),
               Row(
                 children: [
@@ -92,70 +97,83 @@ class Daily extends StatelessWidget {
                       children: [
                         Align(
                           alignment: Alignment.centerLeft,
-                          child: Text(
-                              "수면 경험치",
-                              style: Theme.of(context).textTheme.bodyLarge
-                          ),
+                          child: Text("수면 경험치",
+                              style: Theme.of(context).textTheme.bodyLarge),
                         ),
                         SizedBox(height: size.height * 0.01),
                         Container(
-                          child: CustomPaint( // CustomPaint를 그리고 이 안에 차트를 그려줍니다..
-                            size: Size(size.width * 0.25, size.width * 0.25,), // CustomPaint의 크기는 가로 세로 150, 150으로 합니다.
+                          child: CustomPaint(
+                            // CustomPaint를 그리고 이 안에 차트를 그려줍니다..
+                            size: Size(
+                              size.width * 0.25,
+                              size.width * 0.25,
+                            ), // CustomPaint의 크기는 가로 세로 150, 150으로 합니다.
                             painter: PieChart(
-                              percentage: experiencePoints, // 파이 차트가 얼마나 칠해져 있는지 정하는 변수입니다.
-                              textScaleFactor: 0.8, ),
+                              percentage:
+                                  experiencePoints, // 파이 차트가 얼마나 칠해져 있는지 정하는 변수입니다.
+                              textScaleFactor: 0.8,
+                            ),
                           ),
                         ),
                         SizedBox(height: size.height * 0.02),
                         Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children:[
+                            children: [
                               Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
                                       "잠든 시간",
-                                      style: Theme.of(context).textTheme.bodyMedium,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium,
                                       textAlign: TextAlign.right,
                                     ),
                                     Text(
                                       "총 수면 시간",
-                                      style: Theme.of(context).textTheme.bodyMedium,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium,
                                       textAlign: TextAlign.right,
                                     ),
                                     Text(
                                       "수면의 질",
-                                      style: Theme.of(context).textTheme.bodyMedium,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium,
                                       textAlign: TextAlign.right,
                                     ),
                                   ]),
-                              SizedBox(width:5),
+                              SizedBox(width: 5),
                               Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Text("좋음",
+                                    Text(
+                                      "좋음",
                                       style: TextStyle(
                                         fontSize: 14,
-                                        fontWeight: FontWeight.w500,),
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                       textAlign: TextAlign.right,
                                     ),
                                     Text(
                                       "보통",
                                       style: TextStyle(
                                         fontSize: 14,
-                                        fontWeight: FontWeight.w500,),
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                       textAlign: TextAlign.right,
                                     ),
                                     Text(
                                       "나쁨",
                                       style: TextStyle(
                                         fontSize: 14,
-                                        fontWeight: FontWeight.w500,),
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                       textAlign: TextAlign.right,
                                     ),
                                   ]),
-                            ]
-                        )
+                            ])
                       ],
                     ),
                     decoration: BoxDecoration(
@@ -180,7 +198,9 @@ class Daily extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("수면 시간", style: Theme.of(context).textTheme.titleMedium,
+                        Text(
+                          "수면 시간",
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
                         SizedBox(height: size.height * 0.02),
                         Padding(
@@ -188,20 +208,33 @@ class Daily extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("잠든 시간", style: Theme.of(context).textTheme.bodyMedium,),
+                              Text(
+                                "잠든 시간",
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
                               Text(sleepStartTime,
                                   style: TextStyle(
-                                      fontWeight: FontWeight.w500, fontSize: 24)),
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 24)),
                               SizedBox(height: size.height * 0.01),
-                              Text("깬 시간", style: Theme.of(context).textTheme.bodyMedium,),
+                              Text(
+                                "깬 시간",
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
                               Text(wakeupTime,
                                   style: TextStyle(
-                                      fontWeight: FontWeight.w500, fontSize: 24)),
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 24)),
                               SizedBox(height: size.height * 0.01),
-                              Text("총 수면 시간", style: Theme.of(context).textTheme.bodyMedium,),
-                              Text("${minToHour(totalSleepDuration)['hours']}H ${minToHour(totalSleepDuration)['minutes']}M",
+                              Text(
+                                "총 수면 시간",
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                              Text(
+                                  "${minToHour(totalSleepDuration)['hours']}H ${minToHour(totalSleepDuration)['minutes']}M",
                                   style: TextStyle(
-                                      fontWeight: FontWeight.w500, fontSize: 24)),
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 24)),
                             ],
                           ),
                         )
@@ -218,15 +251,16 @@ class Daily extends StatelessWidget {
               Container(
                 width: size.width * 0.84,
                 height: size.height * 0.21,
-                padding: EdgeInsets.fromLTRB(size.width * 0.06, size.height * 0.03, size.width * 0.06, size.height * 0.03),
+                padding: EdgeInsets.fromLTRB(size.width * 0.06,
+                    size.height * 0.03, size.width * 0.06, size.height * 0.03),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("수면의 질", style: Theme.of(context).textTheme.bodyLarge,
+                    Text(
+                      "수면의 질",
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
-                    SizedBox(
-                        height: size.height * 0.02
-                    ),
+                    SizedBox(height: size.height * 0.02),
                     Container(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -234,8 +268,11 @@ class Daily extends StatelessWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("렘수면", style: TextStyle(
-                                  fontWeight: FontWeight.w300, fontSize: 16),),
+                              Text(
+                                "렘수면",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w300, fontSize: 16),
+                              ),
                               SizedBox(height: size.height * 0.01),
                               Text(
                                 "${minToHour(remSleep)['hours']}H ${minToHour(remSleep)['minutes']}M",
@@ -247,8 +284,11 @@ class Daily extends StatelessWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("얕은 수면", style: TextStyle(
-                                  fontWeight: FontWeight.w300, fontSize: 16),),
+                              Text(
+                                "얕은 수면",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w300, fontSize: 16),
+                              ),
                               SizedBox(height: size.height * 0.01),
                               Text(
                                 "${minToHour(lightSleep)['hours']}H ${minToHour(lightSleep)['minutes']}M",
@@ -260,8 +300,11 @@ class Daily extends StatelessWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("깊은 수면", style: TextStyle(
-                                  fontWeight: FontWeight.w300, fontSize: 16),),
+                              Text(
+                                "깊은 수면",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w300, fontSize: 16),
+                              ),
                               SizedBox(height: size.height * 0.01),
                               Text(
                                 "${minToHour(deepSleep)['hours']}H ${minToHour(deepSleep)['minutes']}M",
@@ -283,11 +326,12 @@ class Daily extends StatelessWidget {
               SizedBox(
                 height: size.height * 0.02,
               ),
-              Text("이날의 메시지", style: Theme.of(context).textTheme.bodyLarge,
-                textAlign: TextAlign.left,),
-              SizedBox(
-                  height: size.height * 0.03
+              Text(
+                "이날의 메시지",
+                style: Theme.of(context).textTheme.bodyLarge,
+                textAlign: TextAlign.left,
               ),
+              SizedBox(height: size.height * 0.03),
               Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -295,21 +339,17 @@ class Daily extends StatelessWidget {
                     Container(
                         width: size.width * 0.04,
                         height: size.height * 0.02,
-                        child: SvgPicture.asset('assets/images/quote.svg')
-                    ),
-                    Text('${message}',
+                        child: SvgPicture.asset('assets/icons/dquote1.svg')),
+                    Text(
+                      '${message}',
                       style: Theme.of(context).textTheme.bodyMedium,
-                      textAlign: TextAlign.center,),
+                      textAlign: TextAlign.center,
+                    ),
                     Container(
-                      width: size.width * 0.04,
-                      height: size.height * 0.02,
-                      child: Transform.rotate(
-                          angle: 3.14159, // 라디안 단위로 180도 (PI)
-                          child: SvgPicture.asset('assets/images/quote.svg')
-                      ),),
-                  ]
-              )
-
+                        width: size.width * 0.04,
+                        height: size.height * 0.02,
+                        child: SvgPicture.asset('assets/icons/dquote2.svg')),
+                  ])
             ],
           ),
         ),
@@ -317,5 +357,3 @@ class Daily extends StatelessWidget {
     );
   }
 }
-
-
