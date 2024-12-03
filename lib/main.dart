@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // title: 'Firebase Auth Example',
-      home: const LoginScreen(),
+      home: const PlantSelect(),
     );
   }
 }
