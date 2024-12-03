@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'register.dart';
 import 'home_screen.dart';
 import 'plantSelect.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -15,20 +17,50 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  Future<void> _navigateBasedOnUserInfo(User user) async {
+    try {
+      // 현재 사용자의 Firestore 문서 참조
+      final currentPlantDoc = await FirebaseFirestore.instance
+          .collection('Users') // Users 컬렉션
+          .doc(user.uid) // userId 문서
+          .collection('Plants') // Plants 서브컬렉션
+          .doc('currentPlant') // currentPlant 문서
+          .get();
+
+      // nickname 필드 확인
+      if (currentPlantDoc.exists && currentPlantDoc.data()?['nickname'] != null) {
+        // nickname 존재 -> HomeScreen으로 이동
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else {
+        // nickname 없음 -> PlantSelect로 이동
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const PlantSelect()),
+        );
+      }
+    } catch (e) {
+      // 오류 처리
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
+
+
   Future<void> _loginWithEmail() async {
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text,
       );
+
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Login Successful')));
 
-      // Navigate to HomeScreen after successful login
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const PlantSelect()),
-      );
+      // 로그인 후 화면 전환
+      await _navigateBasedOnUserInfo(credential.user!);
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(e.toString())));
@@ -41,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {
-        return; // User cancelled login
+        return; // 로그인 취소
       }
 
       final GoogleSignInAuthentication googleAuth =
@@ -52,21 +84,19 @@ class _LoginScreenState extends State<LoginScreen> {
         idToken: googleAuth.idToken,
       );
 
+      final userCredential =
       await FirebaseAuth.instance.signInWithCredential(credential);
+
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Google Login Successful')));
 
-      // Navigate to HomeScreen after successful login
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+      // 로그인 후 화면 전환
+      await _navigateBasedOnUserInfo(userCredential.user!);
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
-
 
   void _showLoginModal(bool isGoogleLogin) {
     showModalBottomSheet(
@@ -123,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromRGBO(82, 110, 160, 1.0),
+                    backgroundColor: const Color.fromRGBO(82, 110, 160, 1.0),
                     minimumSize: const Size.fromHeight(50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
@@ -132,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: isGoogleLogin ? _loginWithGoogle : _loginWithEmail,
                   child: Text(
                     isGoogleLogin ? 'Google 로그인 실행' : '이메일 로그인 실행',
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ],
@@ -158,7 +188,6 @@ class _LoginScreenState extends State<LoginScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset('assets/images/hanja.png'),
-
             SizedBox(height: size.height * 0.02), // 높이의 2% 간격
             const Text(
               '건강한 수면으로 키우는 초록 친구',
