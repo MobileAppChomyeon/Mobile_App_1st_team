@@ -24,7 +24,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.mobileapp"
-        minSdkVersion 23 // flutter.minSdkVersion 대신 명시적으로 23 지정
+        minSdkVersion 26 // flutter.minSdkVersion 대신 명시적으로 26 지정
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutter.versionCode
         versionName flutter.versionName

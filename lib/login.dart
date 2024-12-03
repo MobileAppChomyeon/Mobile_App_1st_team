@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'register.dart';
 import 'home_screen.dart';
 import 'plantSelect.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -12,8 +14,54 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  Future<void> checkPlantNickname() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      print('User not logged in');
+      return;
+    }
+
+    final plantRef = _db
+        .collection('Users')
+        .doc(user.uid)
+        .collection('Plants')
+        .doc('currentPlant');
+
+    try {
+      final plantDoc = await plantRef.get();
+
+      if (plantDoc.exists) {
+        final nickname = plantDoc.data()?['nickname'];
+        if (nickname != null && nickname.isNotEmpty) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => PlantSelect()),
+          );
+        }
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => PlantSelect()),
+        );
+      }
+    } catch (e) {
+      print('Error checking plant nickname: $e');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => PlantSelect()),
+      );
+    }
+  }
 
   Future<void> _loginWithEmail() async {
     try {
@@ -21,17 +69,11 @@ class _LoginScreenState extends State<LoginScreen> {
         email: emailController.text,
         password: passwordController.text,
       );
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Login Successful')));
-
-      // Navigate to HomeScreen after successful login
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const PlantSelect()),
-      );
+      await checkPlantNickname(); // 로그인 성공 후 닉네임 확인
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
     }
   }
 
@@ -41,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {
-        return; // User cancelled login
+        return; // 로그인 취소
       }
 
       final GoogleSignInAuthentication googleAuth =
@@ -53,29 +95,22 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       await FirebaseAuth.instance.signInWithCredential(credential);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Google Login Successful')));
-
-      // Navigate to HomeScreen after successful login
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+      await checkPlantNickname(); // 로그인 성공 후 닉네임 확인
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
     }
   }
-
 
   void _showLoginModal(bool isGoogleLogin) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // 전체 화면 모달
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
         return FractionallySizedBox(
-          heightFactor: 0.9, // 화면 높이의 90% 차지
+          heightFactor: 0.9,
           child: Container(
             padding: const EdgeInsets.all(20),
             decoration: const BoxDecoration(
@@ -98,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     IconButton(
                       icon: const Icon(Icons.close),
                       onPressed: () {
-                        Navigator.pop(context); // 모달 닫기
+                        Navigator.pop(context);
                       },
                     ),
                   ],
@@ -123,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromRGBO(82, 110, 160, 1.0),
+                    backgroundColor: const Color.fromRGBO(82, 110, 160, 1.0),
                     minimumSize: const Size.fromHeight(50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
@@ -132,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: isGoogleLogin ? _loginWithGoogle : _loginWithEmail,
                   child: Text(
                     isGoogleLogin ? 'Google 로그인 실행' : '이메일 로그인 실행',
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ],
@@ -145,25 +180,32 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
-      appBar: AppBar(
-        // title: const Text('Login'),
-        backgroundColor: Colors.white,
-      ),
+      appBar: AppBar(backgroundColor: Colors.white),
       backgroundColor: Colors.white,
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(size.width * 0.04),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset('assets/images/hanja.png'),
-            // const Text(
-            //   '초면: 草眠',
-            //   style: TextStyle(fontSize: 40),
-            // ),
-            const Text('건강한 수면으로 키우는 초록 친구',style: TextStyle(fontFamily: "Pretendard",fontWeight:FontWeight.w400,fontSize: 14,color: Colors.black ),),
-            Image.asset("assets/images/app_logo.png"),
-            const SizedBox(height: 20),
+            SizedBox(height: size.height * 0.02),
+            const Text(
+              '건강한 수면으로 키우는 초록 친구',
+              style: TextStyle(
+                fontFamily: "Pretendard",
+                fontWeight: FontWeight.w400,
+                fontSize: 14,
+                color: Colors.black,
+              ),
+            ),
+            SizedBox(
+              height: size.height * 0.4,
+              child: Image.asset('assets/images/app_logo.png'),
+            ),
+            SizedBox(height: size.height * 0.03),
             TextButton(
               onPressed: () {
                 Navigator.push(
@@ -171,45 +213,67 @@ class _LoginScreenState extends State<LoginScreen> {
                   MaterialPageRoute(builder: (context) => const RegisterScreen()),
                 );
               },
-              child: const Text('이메일로 회원가입하기',style: TextStyle(fontFamily: "Pretendard",fontWeight:FontWeight.w400,fontSize: 16,color: Colors.grey)),
+              child: const Text(
+                '이메일로 회원가입하기',
+                style: TextStyle(
+                  fontFamily: "Pretendard",
+                  fontWeight: FontWeight.w400,
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+              ),
             ),
+            SizedBox(height: size.height * 0.01),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromRGBO(82, 110, 160, 1.0),
-                minimumSize: const Size.fromHeight(50),
-                // side: BorderSide(color: Colors.black,width: 2),
+                backgroundColor: const Color.fromRGBO(82, 110, 160, 1.0),
+                minimumSize: Size.fromHeight(size.height * 0.06),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              onPressed: () => _showLoginModal(false), // 이메일 로그인 모달
-              child: const Text('이메일 로그인',style: TextStyle(fontFamily: "Pretendard",fontWeight:FontWeight.w400,fontSize: 20,color: Colors.white)),
+              onPressed: () => _showLoginModal(false),
+              child: const Text(
+                '이메일 로그인',
+                style: TextStyle(
+                  fontFamily: "Pretendard",
+                  fontWeight: FontWeight.w400,
+                  fontSize: 20,
+                  color: Colors.white,
+                ),
+              ),
             ),
-
-            SizedBox(height: 10,),
+            SizedBox(height: size.height * 0.01),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                minimumSize: const Size.fromHeight(50),
-                side: BorderSide(color: Colors.black,width: 1),
+                minimumSize: Size.fromHeight(size.height * 0.06),
+                side: const BorderSide(color: Colors.black, width: 1),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              onPressed: () => _showLoginModal(true), // Google 로그인 모달
+              onPressed: () => _showLoginModal(true),
               child: Stack(
                 children: [
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Image.asset('assets/images/google_logo.png'),
                   ),
-                  Center(
-                    child: const Text('Google 로그인',style: TextStyle(fontFamily: "Pretendard",fontWeight:FontWeight.w400,fontSize: 20,color: Colors.black),),
+                  const Center(
+                    child: Text(
+                      'Google 로그인',
+                      style: TextStyle(
+                        fontFamily: "Pretendard",
+                        fontWeight: FontWeight.w400,
+                        fontSize: 20,
+                        color: Colors.black,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-
           ],
         ),
       ),
