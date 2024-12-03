@@ -54,6 +54,7 @@ class UserDataService {
     required int deepSleep,
     required int totalSleepDuration,
     required int sleepScore,
+    required int experience,
     required int targetHours,
     required String targetSleepTime,
   }) async {
@@ -75,6 +76,7 @@ class UserDataService {
         'deepSleep': deepSleep,
         'totalSleepDuration': totalSleepDuration,
         'sleepScore': sleepScore,
+        'experience': experience,
         'sleepGoal': {
           'targetHours': targetHours,
           'targetSleepTime': targetSleepTime,
