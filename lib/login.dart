@@ -145,25 +145,35 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size; // 화면 크기 가져오기
+
     return Scaffold(
       appBar: AppBar(
-        // title: const Text('Login'),
         backgroundColor: Colors.white,
       ),
       backgroundColor: Colors.white,
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(size.width * 0.04), // 너비의 4%를 패딩으로 설정
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset('assets/images/hanja.png'),
-            // const Text(
-            //   '초면: 草眠',
-            //   style: TextStyle(fontSize: 40),
-            // ),
-            const Text('건강한 수면으로 키우는 초록 친구',style: TextStyle(fontFamily: "Pretendard",fontWeight:FontWeight.w400,fontSize: 14,color: Colors.black ),),
-            Image.asset("assets/images/app_logo.png"),
-            const SizedBox(height: 20),
+
+            SizedBox(height: size.height * 0.02), // 높이의 2% 간격
+            const Text(
+              '건강한 수면으로 키우는 초록 친구',
+              style: TextStyle(
+                fontFamily: "Pretendard",
+                fontWeight: FontWeight.w400,
+                fontSize: 14,
+                color: Colors.black,
+              ),
+            ),
+            SizedBox(
+              height: size.height * 0.4, // 높이의 15%
+              child: Image.asset('assets/images/app_logo.png'),
+            ),
+            SizedBox(height: size.height * 0.03), // 높이의 3% 간격
             TextButton(
               onPressed: () {
                 Navigator.push(
@@ -171,27 +181,42 @@ class _LoginScreenState extends State<LoginScreen> {
                   MaterialPageRoute(builder: (context) => const RegisterScreen()),
                 );
               },
-              child: const Text('이메일로 회원가입하기',style: TextStyle(fontFamily: "Pretendard",fontWeight:FontWeight.w400,fontSize: 16,color: Colors.grey)),
+              child: const Text(
+                '이메일로 회원가입하기',
+                style: TextStyle(
+                  fontFamily: "Pretendard",
+                  fontWeight: FontWeight.w400,
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+              ),
             ),
+            SizedBox(height: size.height * 0.01),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromRGBO(82, 110, 160, 1.0),
-                minimumSize: const Size.fromHeight(50),
-                // side: BorderSide(color: Colors.black,width: 2),
+                backgroundColor: const Color.fromRGBO(82, 110, 160, 1.0),
+                minimumSize: Size.fromHeight(size.height * 0.06), // 너비의 80%, 높이의 6%
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
               onPressed: () => _showLoginModal(false), // 이메일 로그인 모달
-              child: const Text('이메일 로그인',style: TextStyle(fontFamily: "Pretendard",fontWeight:FontWeight.w400,fontSize: 20,color: Colors.white)),
+              child: const Text(
+                '이메일 로그인',
+                style: TextStyle(
+                  fontFamily: "Pretendard",
+                  fontWeight: FontWeight.w400,
+                  fontSize: 20,
+                  color: Colors.white,
+                ),
+              ),
             ),
-
-            SizedBox(height: 10,),
+            SizedBox(height: size.height * 0.01), // 높이의 2% 간격
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                minimumSize: const Size.fromHeight(50),
-                side: BorderSide(color: Colors.black,width: 1),
+                minimumSize: Size.fromHeight(size.height * 0.06),
+                side: const BorderSide(color: Colors.black, width: 1),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
@@ -204,12 +229,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Image.asset('assets/images/google_logo.png'),
                   ),
                   Center(
-                    child: const Text('Google 로그인',style: TextStyle(fontFamily: "Pretendard",fontWeight:FontWeight.w400,fontSize: 20,color: Colors.black),),
+                    child: const Text(
+                      'Google 로그인',
+                      style: TextStyle(
+                        fontFamily: "Pretendard",
+                        fontWeight: FontWeight.w400,
+                        fontSize: 20,
+                        color: Colors.black,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-
           ],
         ),
       ),

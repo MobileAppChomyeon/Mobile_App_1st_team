@@ -36,9 +36,9 @@ class PlantSelect extends StatelessWidget {
                 runSpacing: 30,
                 alignment: WrapAlignment.center,
                 children: [
-                  _buildPlantCard(context, '식물1', '식물설명왕아아아\n식물설명1'),
-                  _buildPlantCard(context, '식물2', '식물설명왕아아아\n식물설명2'),
-                  _buildPlantCard(context, '식물3', '식물설명왕아아아\n식물설명3'),
+                  _buildPlantCard(context, '코스모스', '가녀린 줄기와 풍성한 꽃잎으로 유명한 코스모스는 가을의 대표적인 꽃이에요. 햇볕을 좋아하며 관리가 쉬워 초보자도 키우기 좋습니다. 다양한 색상으로 정원이나 화단을 밝게 만듭니다.', 'assets/flower/cosmos/cosmos0.png'),
+                  _buildPlantCard(context, '데이지', '심플하고 귀여운 하얀 꽃잎과 노란 꽃 중심이 특징인 데이지는 사랑과 순수함을 상징합니다. 강한 생명력으로 어디서든 잘 자라며 그늘에서도 적응력이 뛰어나요. 작은 공간에서도 아름다운 포인트를 줍니다.', 'assets/flower/daisy/daisy0.png'),
+                  _buildPlantCard(context, '아게라텀', '부드러운 퍼플, 블루, 화이트 색상의 털 같은 꽃이 매력적인 아게라텀은 여름 정원에 생기를 더해줍니다. 강렬한 햇볕에도 잘 자라며 벌과 나비를 끌어들이는 효과가 있어요. 낮은 키로 화단 가장자리에 심기 적합합니다.', 'assets/flower/ageratum/ageratum0.png'),
                 ],
               ),
             ],
@@ -48,9 +48,9 @@ class PlantSelect extends StatelessWidget {
     );
   }
 
-  static Widget _buildPlantCard(BuildContext context, String plantName, String description) {
+  static Widget _buildPlantCard(BuildContext context, String plantName, String description, String imagePath) {
     return GestureDetector(
-      onTap: () => _showPlantDetail(context, plantName, description),
+      onTap: () => _showPlantDetail(context, plantName, description, imagePath),
       child: SizedBox(
         width: 140,
         child: Column(
@@ -60,8 +60,12 @@ class PlantSelect extends StatelessWidget {
               width: 140,
               height: 140,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                // color: Colors.blue[100],
                 borderRadius: BorderRadius.circular(12),
+                image: DecorationImage(image: AssetImage(imagePath),
+                fit: BoxFit.cover,
+                ),
+
               ),
             ),
             const SizedBox(height: 8),
@@ -75,7 +79,7 @@ class PlantSelect extends StatelessWidget {
     );
   }
 
-  static void _showPlantDetail(BuildContext context, String plantName, String description) {
+  static void _showPlantDetail(BuildContext context, String plantName, String description, String imagePath) {
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -97,8 +101,10 @@ class PlantSelect extends StatelessWidget {
                       width: 140,
                       height: 140,
                       decoration: BoxDecoration(
-                        color: Colors.grey[300],
+                        // color: Colors.grey[300],
                         borderRadius: BorderRadius.circular(12),
+                        image: DecorationImage(image: AssetImage(imagePath),
+                        fit: BoxFit.cover,)
                       ),
                     ),
                     const SizedBox(height: 16),
