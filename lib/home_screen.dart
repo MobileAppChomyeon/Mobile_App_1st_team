@@ -5,6 +5,8 @@ import 'plantBook.dart';
 import 'goalSetting.dart';
 import 'weeklySleepData.dart';
 import 'plantSelectAgain.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // void main() {
 //   runApp(const Directionality(
@@ -68,6 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.0),
           ),

@@ -111,8 +111,8 @@ class UserDataService {
     required String? nickname,
     required DateTime startDate,
     required DateTime? endDate,
-    required String status,
-    required String growthStage,
+    // required String status,
+    required int growthStage,
     required String imageUrl,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
@@ -127,7 +127,7 @@ class UserDataService {
         'nickname': nickname,
         'startDate': Timestamp.fromDate(startDate),
         'endDate': endDate != null ? Timestamp.fromDate(endDate) : null,
-        'status': status,
+        // 'status': status,
         'growthStage': growthStage,
         'imageUrl': imageUrl,
       }, SetOptions(merge: true));
@@ -162,7 +162,7 @@ class UserDataService {
     required DateTime startDate,
     required DateTime endDate,
     required String description,
-    required String growthStatus,
+    // required String growthStatus,
     required List<String> growthStages,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
@@ -185,7 +185,7 @@ class UserDataService {
         'startDate': Timestamp.fromDate(startDate),
         'endDate': Timestamp.fromDate(endDate),
         'description': description,
-        'growthStatus': growthStatus,
+        // 'growthStatus': growthStatus,
         'growthStages': growthStages,
       });
     } catch (e) {

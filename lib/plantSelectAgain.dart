@@ -293,12 +293,12 @@ class PlantSelectAgain extends StatelessWidget {
                         ),
                         onPressed: () {
                           Navigator.of(context).pop();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PlantNicknameInputPage(),
-                            ),
-                          );
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //     builder: (context) => PlantNicknameInputPage(plantId: plantId,),
+                          //   ),
+                          // );
                         },
                         child: const Text(
                           '선택하기',

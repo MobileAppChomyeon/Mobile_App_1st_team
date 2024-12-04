@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobileapp/home_screen.dart';
 import 'home_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class BackgroundSelectPage extends StatefulWidget {
   final String plantNickname;
@@ -29,6 +31,33 @@ class _BackgroundSelectPageState extends State<BackgroundSelectPage> {
       'title': '고요하고 반짝이는 밤',
     },
   ];
+
+  Future<void> _saveBackgroundToFirestore(String backgroundImage) async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("로그인이 필요합니다.")),
+      );
+      return;
+    }
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.uid)
+          .collection('Plants')
+          .doc('currentPlant')
+          .update({'backgroundImage': backgroundImage});
+
+      print('배경 이미지 저장 완료: $backgroundImage');
+    } catch (e) {
+      print('배경 이미지 저장 실패: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("배경 이미지 저장 실패: $e")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -161,12 +190,18 @@ class _BackgroundSelectPageState extends State<BackgroundSelectPage> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 textStyle: const TextStyle(fontSize: 18,),
               ),
-              onPressed: () {
+              onPressed: () async {
                 final selectedBackground = _backgroundData[_currentPage];
-                print('선택된 배경: ${selectedBackground['title']}');
-                Navigator.pop(context, selectedBackground);
-                Navigator.push(context,
-                MaterialPageRoute(builder: (context) => HomeScreen()));
+                final backgroundImage = selectedBackground['image']!;
+
+                // Firestore에 저장
+                await _saveBackgroundToFirestore(backgroundImage);
+
+                // HomeScreen으로 이동
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomeScreen()),
+                );
               },
               child: const Text(
                 '선택하기',
