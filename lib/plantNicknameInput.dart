@@ -172,6 +172,7 @@ class _PlantNicknameInputPageState extends State<PlantNicknameInputPage> {
                     ...plantData!,
                     'nickname': plantNickname,
                     'startDate': DateTime.now(),
+                    'growthStage': 1,
                   });
 
                   Navigator.push(

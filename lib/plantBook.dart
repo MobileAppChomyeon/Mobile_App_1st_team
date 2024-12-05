@@ -95,7 +95,7 @@ class PlantBook extends StatelessWidget {
   }
 
   Widget _buildPlantBookCard(BuildContext context, Map<String, String?> plant) {
-    final isCompleted = plant['endDate'] != null;
+    final isCompleted = plant['endDate'] != null; // 완료됨
     final isCurrent = plant['nickname'] != null && plant['endDate'] == null; // "지금 키우고 있어요!" 조건
     final imagePath =
     isCompleted ? plant['completeImage']! : plant['silhouetteImage']!;
