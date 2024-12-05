@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'register.dart';
 import 'home_screen.dart';
 import 'plantSelect.dart';
+import 'plantData.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -19,6 +20,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _navigateBasedOnUserInfo(User user) async {
     try {
+      final plantService = PlantService();
+      print('도감에 식물정보 추가');
+      await plantService.addEncyclopedia();
+
       // 현재 사용자의 Firestore 문서 참조
       final currentPlantDoc = await FirebaseFirestore.instance
           .collection('Users') // Users 컬렉션

@@ -171,9 +171,24 @@ class _PlantNicknameInputPageState extends State<PlantNicknameInputPage> {
                       .set({
                     ...plantData!,
                     'nickname': plantNickname,
-                    'startDate': DateTime.now(),
+                    'startDate': Timestamp.fromDate(DateTime.now()),
                     'growthStage': 1,
                   });
+                  print('현재 내 식물 정보 업데이트');
+
+                  final encyclopediaRef = _db
+                      .collection('Users')
+                      .doc(user.uid)
+                      .collection('Plants')
+                      .doc('encyclopedia')
+                      .collection('plantsList')
+                      .doc(widget.plantId);
+                  await encyclopediaRef.set({
+                    ...plantData!,
+                    'nickname': plantNickname,
+                    'startDate': Timestamp.fromDate(DateTime.now()),
+                  });
+                  print('내 도감 업데이트');
 
                   Navigator.push(
                     context,
