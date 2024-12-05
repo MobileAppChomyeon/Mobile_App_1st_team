@@ -65,7 +65,11 @@ class UserDataService {
     }
 
     final today = DateTime.now().toIso8601String().split('T')[0];
-    final sleepRef = _db.collection('Users').doc(user.uid).collection('SleepInfo').doc(today);
+    final sleepRef = _db
+        .collection('Users')
+        .doc(user.uid)
+        .collection('SleepInfo')
+        .doc(today);
 
     try {
       await sleepRef.set({
@@ -96,7 +100,12 @@ class UserDataService {
     }
 
     try {
-      final sleepDoc = await _db.collection('Users').doc(user.uid).collection('SleepInfo').doc(date).get();
+      final sleepDoc = await _db
+          .collection('Users')
+          .doc(user.uid)
+          .collection('SleepInfo')
+          .doc(date)
+          .get();
       if (sleepDoc.exists) {
         return sleepDoc.data();
       }
@@ -108,9 +117,9 @@ class UserDataService {
 
   // 식물 정보 저장
   Future<void> savePlantInfo({
-    required String? nickname,
-    required DateTime startDate,
-    required DateTime? endDate,
+    String? nickname,
+    DateTime? startDate,
+    DateTime? endDate,
     // required String status,
     required int growthStage,
     required String imageUrl,
@@ -122,10 +131,14 @@ class UserDataService {
     }
 
     try {
-      final plantRef = _db.collection('Users').doc(user.uid).collection('Plants').doc('currentPlant');
+      final plantRef = _db
+          .collection('Users')
+          .doc(user.uid)
+          .collection('Plants')
+          .doc('currentPlant');
       await plantRef.set({
         'nickname': nickname,
-        'startDate': Timestamp.fromDate(startDate),
+        'startDate': startDate != null ? Timestamp.fromDate(startDate) : null,
         'endDate': endDate != null ? Timestamp.fromDate(endDate) : null,
         // 'status': status,
         'growthStage': growthStage,
@@ -145,7 +158,12 @@ class UserDataService {
     }
 
     try {
-      final plantDoc = await _db.collection('Users').doc(user.uid).collection('Plants').doc('currentPlant').get();
+      final plantDoc = await _db
+          .collection('Users')
+          .doc(user.uid)
+          .collection('Plants')
+          .doc('currentPlant')
+          .get();
       if (plantDoc.exists) {
         return plantDoc.data();
       }
