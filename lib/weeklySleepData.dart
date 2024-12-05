@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'daySleepData.dart';
 import 'package:intl/intl.dart';
+import 'userData.dart';
 
 class Weekly extends StatefulWidget {
   const Weekly({super.key});
@@ -25,28 +28,96 @@ class Weekly extends StatefulWidget {
 
 class _WeeklyState extends State<Weekly> {
 
-  int experinecePoints = 60;
+  int todayExperiencePoints = 0;
   String message = '어느 정도 주무셨군요!\n오늘은 조금 더 일찍 잠 들어 보세요';
+  DateTime? startDate;
+  List<Map<String, dynamic>> experienceDateList = []; // 날짜와 경험치 리스트
+  final DateTime todayDate = DateTime.now();
+  final today = DateTime.now().toIso8601String().split('T')[0];
 
-  // 주어진 시작 날짜를 입력받아 오늘까지의 날짜 목록을 생성하는 함수
-  List<DateTime> generateDateList(DateTime startDate) {
-    List<DateTime> dateList = [];
-    DateTime currentDate = startDate;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  bool isLoading = true;
 
-    while (!currentDate.isAfter(DateTime.now())) {
-      dateList.add(currentDate);
-      currentDate = currentDate.add(Duration(days: 1)); // 하루씩 추가
+  void loadTodaySleepData() async {
+    final userService = UserDataService();
+    try {
+      final sleepInfo = await userService.fetchSleepInfo(date: today);
+      if (sleepInfo != null) {
+        if (mounted) {
+          setState(() {
+            todayExperiencePoints = sleepInfo['experience'] ?? todayExperiencePoints;
+          });
+        }
+      } else {
+        print('No sleep info found for the given date.');
+      }
+    } catch (e) {
+      print('Error loading sleep goal: $e');
+    }
+  }
+
+  void loadStartDateAndExperiences() async {
+    final userService = UserDataService();
+    try {
+      // StartDate 가져오기
+      final dateInfo = await userService.fetchCurrentPlantInfo();
+      if (dateInfo != null) {
+        DateTime? fetchedStartDate = (dateInfo['startDate'] as Timestamp).toDate();
+        if (fetchedStartDate != null) {
+          List<Map<String, dynamic>> dateExperienceList =
+          await generateDateExperienceList(fetchedStartDate);
+          setState(() {
+            startDate = fetchedStartDate;
+            experienceDateList = dateExperienceList;
+          });
+        }
+      } else {
+        print('No start date found.');
+      }
+    } catch (e) {
+      print('Error loading start date: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> generateDateExperienceList(DateTime fetchedStartDate) async {
+    final userService = UserDataService();
+    List<Map<String, dynamic>> dateExperienceList = [];
+    DateTime currentDate = fetchedStartDate;
+
+    while (!currentDate.isAfter(todayDate)) {
+      String formattedDate = DateFormat('yyyy-MM-dd').format(currentDate);
+      try {
+        final sleepInfo = await userService.fetchSleepInfo(date: formattedDate);
+        int experience = sleepInfo?['experience'] ?? 0;
+
+        dateExperienceList.add({
+          'date': formattedDate,
+          'experience': experience,
+        });
+      } catch (e) {
+        print('Error fetching experience for $formattedDate: $e');
+      }
+      currentDate = currentDate.add(const Duration(days: 1));
     }
 
-    return dateList.reversed.toList();
+    // 최신 날짜가 위로 오도록 정렬
+    dateExperienceList.sort((a, b) =>
+        DateTime.parse(b['date']).compareTo(DateTime.parse(a['date'])));
+
+    return dateExperienceList;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadStartDateAndExperiences();
   }
 
   @override
   Widget build(BuildContext context) {
 
     final Size size = MediaQuery.of(context).size;
-    DateTime startDate = DateTime(2024, 10, 31);
-    List<DateTime> dateList = generateDateList(startDate);
+    loadTodaySleepData();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -78,7 +149,7 @@ class _WeeklyState extends State<Weekly> {
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) {
                       return Daily(
-                        chosen: DateTime.now(),
+                        chosen: today,
                       );
                     }));
               },
@@ -90,13 +161,13 @@ class _WeeklyState extends State<Weekly> {
                     SizedBox(
                         width:35
                     ),
-                    Text('${experinecePoints}', style:
+                    Text('${todayExperiencePoints}', style:
                     TextStyle(fontWeight: FontWeight.w500,fontSize: 40),
                       textAlign: TextAlign.right,),
                     SizedBox(
                         width:20
                     ),
-                    Text('${message}',
+                    Text('${message}', //TODO: message 연결
                       style: Theme.of(context).textTheme.bodyMedium,
                       textAlign: TextAlign.left,
                     ),
@@ -137,19 +208,18 @@ class _WeeklyState extends State<Weekly> {
               ),
               padding: EdgeInsets.fromLTRB(size.width * 0.06, size.height * 0.02, size.width * 0.06, size.height * 0.02),
               child: ListView.builder(
-                itemCount: dateList.length,
+                itemCount: experienceDateList.length,
                 itemBuilder: (context, index) {
-                  DateTime date = dateList[index];
-                  String formattedDate = DateFormat('yyyy/MM/dd').format(date); // 날짜 형식 설정
+                  final item = experienceDateList[index];
 
                   return ListTile(
-                    title: Text('${formattedDate}: ${experinecePoints} 경험치',
+                    title: Text('${item['date']}: ${item['experience']} 경험치',
                         style: Theme.of(context).textTheme.bodyMedium),
                     onTap: () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
                             return Daily(
-                              chosen: date,
+                              chosen: item['date'],
                             );
                           }));
                     },

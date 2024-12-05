@@ -4,27 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 class UserDataService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // 사용자 기본 정보 저장
-  Future<void> saveUserInfo({
-    required String backgroundImage,
-    required String description,
-  }) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      print('User not logged in');
-      return;
-    }
-
-    try {
-      final userRef = _db.collection('Users').doc(user.uid);
-      await userRef.set({
-        'backgroundImage': backgroundImage,
-        'description': description,
-      }, SetOptions(merge: true));
-    } catch (e) {
-      print('Error saving user info: $e');
-    }
-  }
 
   // **사용자 기본 정보 가져오기**
   Future<Map<String, dynamic>?> fetchUserInfo() async {
@@ -47,16 +26,16 @@ class UserDataService {
 
   // 수면 정보 저장
   Future<void> saveSleepInfo({
-    required String sleepStartTime,
-    required String wakeUpTime,
-    required int remSleep,
-    required int lightSleep,
-    required int deepSleep,
-    required int totalSleepDuration,
-    required int sleepScore,
-    required int experience,
-    required int targetHours,
-    required String targetSleepTime,
+    String? sleepStartTime,
+    String? wakeUpTime,
+    int? remSleep,
+    int? lightSleep,
+    int? deepSleep,
+    int? totalSleepDuration,
+    int? sleepScore,
+    int? experience,
+    int? targetHours,
+    String? targetSleepTime,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -67,25 +46,31 @@ class UserDataService {
     final today = DateTime.now().toIso8601String().split('T')[0];
     final sleepRef = _db.collection('Users').doc(user.uid).collection('SleepInfo').doc(today);
 
-    try {
-      await sleepRef.set({
-        'sleepStartTime': sleepStartTime,
-        'wakeUpTime': wakeUpTime,
-        'remSleep': remSleep,
-        'lightSleep': lightSleep,
-        'deepSleep': deepSleep,
-        'totalSleepDuration': totalSleepDuration,
-        'sleepScore': sleepScore,
-        'experience': experience,
+    // 필드가 null이 아닌 경우에만 Firestore에 포함
+    final sleepData = <String, dynamic>{
+      if (sleepStartTime != null) 'sleepStartTime': sleepStartTime,
+      if (wakeUpTime != null) 'wakeUpTime': wakeUpTime,
+      if (remSleep != null) 'remSleep': remSleep,
+      if (lightSleep != null) 'lightSleep': lightSleep,
+      if (deepSleep != null) 'deepSleep': deepSleep,
+      if (totalSleepDuration != null) 'totalSleepDuration': totalSleepDuration,
+      if (sleepScore != null) 'sleepScore': sleepScore,
+      if (experience != null) 'experience': experience,
+      if (targetHours != null || targetSleepTime != null)
         'sleepGoal': {
-          'targetHours': targetHours,
-          'targetSleepTime': targetSleepTime,
+          if (targetHours != null) 'targetHours': targetHours,
+          if (targetSleepTime != null) 'targetSleepTime': targetSleepTime,
         },
-      });
+    };
+
+    try {
+      await sleepRef.set(sleepData, SetOptions(merge: true)); // 병합 저장
+      print('Sleep info saved successfully');
     } catch (e) {
       print('Error saving sleep info: $e');
     }
   }
+
 
   // **수면 정보 가져오기**
   Future<Map<String, dynamic>?> fetchSleepInfo({required String date}) async {
