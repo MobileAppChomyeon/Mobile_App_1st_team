@@ -162,6 +162,4 @@ class PlantService {
       print('Error adding encyclopedia: $e');
     }
   }
-
-
 }
