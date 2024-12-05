@@ -173,7 +173,7 @@ class UserDataService {
   }
 
   // 식물 백과사전 저장
-  Future<void> savePlantEncyclopedia({
+  Future<void> updatePlantEncyclopedia({
     required String plantId,
     DateTime? endDate,
     String? imageUrl,
@@ -196,9 +196,11 @@ class UserDataService {
       final data = <String, dynamic>{};
       if (endDate != null) data['endDate'] = Timestamp.fromDate(endDate);
       if (imageUrl != null) data['imageUrl'] = imageUrl;
-      await encyclopediaRef.set(data, SetOptions(merge: true));
+
+      await encyclopediaRef.update(data); // update로 변경
+      print('Plant encyclopedia updated successfully');
     } catch (e) {
-      print('Error saving plant encyclopedia: $e');
+      print('Error updating plant encyclopedia: $e');
     }
   }
 
