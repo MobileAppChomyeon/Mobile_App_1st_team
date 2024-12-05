@@ -48,7 +48,7 @@ class PlantService {
       'silhouetteImage': 'assets/flower/silhouette/s1.png',
       'startDate': null,
       'endDate': null,
-      'imageUrl': null,
+      'imageUrl': 'assets/flower/complete/s1.png',
     },
     {
       'plantId': 'other2',
@@ -68,7 +68,7 @@ class PlantService {
       'silhouetteImage': 'assets/flower/silhouette/s3.png',
       'startDate': null,
       'endDate': null,
-      'imageUrl': null,
+      'imageUrl': 'assets/flower/complete/s3.png',
     },
     {
       'plantId': 'other4',
@@ -145,6 +145,7 @@ class PlantService {
 
       for (var plant in plants) {
         await encyclopedia.doc(plant['plantId'] as String).set({
+          'plantId': plant['plantId'],
           'species': plant['species'],
           'nickname': plant['nickname'],
           'description': plant['description'],
@@ -161,4 +162,6 @@ class PlantService {
       print('Error adding encyclopedia: $e');
     }
   }
+
+
 }

@@ -174,13 +174,9 @@ class UserDataService {
 
   // 식물 백과사전 저장
   Future<void> savePlantEncyclopedia({
-    required String? nickname,
     required String plantId,
-    required DateTime startDate,
-    required DateTime endDate,
-    required String description,
-    // required String growthStatus,
-    required List<String> growthStages,
+    DateTime? endDate,
+    String? imageUrl,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -194,17 +190,13 @@ class UserDataService {
           .doc(user.uid)
           .collection('Plants')
           .doc('encyclopedia')
-          .collection('entries')
+          .collection('plantsList')
           .doc(plantId);
 
-      await encyclopediaRef.set({
-        'nickname': nickname,
-        'startDate': Timestamp.fromDate(startDate),
-        'endDate': Timestamp.fromDate(endDate),
-        'description': description,
-        // 'growthStatus': growthStatus,
-        'growthStages': growthStages,
-      });
+      final data = <String, dynamic>{};
+      if (endDate != null) data['endDate'] = Timestamp.fromDate(endDate);
+      if (imageUrl != null) data['imageUrl'] = imageUrl;
+      await encyclopediaRef.set(data, SetOptions(merge: true));
     } catch (e) {
       print('Error saving plant encyclopedia: $e');
     }
@@ -224,13 +216,43 @@ class UserDataService {
           .doc(user.uid)
           .collection('Plants')
           .doc('encyclopedia')
-          .collection('entries')
+          .collection('plantsList')
           .get();
 
       return querySnapshot.docs.map((doc) => doc.data()).toList();
     } catch (e) {
       print('Error fetching plant encyclopedia: $e');
       return [];
+    }
+  }
+
+  Future<void> updateMockEncyclopedia() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('User not logged in');
+      return;
+    }
+    try {
+      final encyclopediaRef = _db
+          .collection('Users')
+          .doc(user.uid)
+          .collection('Plants')
+          .doc('encyclopedia')
+          .collection('plantsList');
+
+      await encyclopediaRef.doc('other1').update({
+        'startDate': Timestamp.fromDate(DateTime(2024,11,3)),
+        'endDate': Timestamp.fromDate(DateTime(2024,12,4)),
+        'nickname': '첫째',
+      });
+      await encyclopediaRef.doc('other3').update({
+        'startDate': Timestamp.fromDate(DateTime(2024,10,1)),
+        'endDate': Timestamp.fromDate(DateTime(2024,11,3)),
+        'nickname': '둘째',
+      });
+      print('Mock data inserted');
+    } catch (e) {
+      print('Mock 데이터 삽입 실패');
     }
   }
 }

@@ -183,8 +183,7 @@ class _PlantNicknameInputPageState extends State<PlantNicknameInputPage> {
                       .doc('encyclopedia')
                       .collection('plantsList')
                       .doc(widget.plantId);
-                  await encyclopediaRef.set({
-                    ...plantData!,
+                  await encyclopediaRef.update({
                     'nickname': plantNickname,
                     'startDate': Timestamp.fromDate(DateTime.now()),
                   });
@@ -206,7 +205,7 @@ class _PlantNicknameInputPageState extends State<PlantNicknameInputPage> {
                   : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor:
-                isButtonEnabled ? const Color(0xFF4A6FA5) : Colors.grey,
+                isButtonEnabled ? const Color(0xFFB4C7E7) : Colors.grey,
                 minimumSize: Size(size.width * 0.8, size.height * 0.07),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(size.width * 0.03),
@@ -215,7 +214,8 @@ class _PlantNicknameInputPageState extends State<PlantNicknameInputPage> {
               child: Text(
                 '다음',
                 style: TextStyle(
-                  color: isButtonEnabled ? Colors.white : Colors.black54,
+                  color: isButtonEnabled ? Colors.black : Colors.black54,
+                  fontSize: 16,
                 ),
               ),
             ),

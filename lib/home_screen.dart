@@ -46,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? plantImage;
   String? plantName = '무리무리';
   String? sleepComment;
-  final int totalSleepDuration = 8; // 총 경험치
+  final int totalSleepDuration = 300; // 총 경험치
   final int sleepScore = 10; // 오늘 수면 점수
 
   @override
@@ -127,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ); // 다른 화면으로 이동
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4A6FA5), // 버튼 색상
+                  backgroundColor: const Color(0xFFB4C7E7), // 버튼 색상
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -137,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(
                     fontFamily: "Pretendard",
                     fontSize: 14,
-                    color: Colors.white,
+                    color: Colors.black,
                   ),
                 ),
               ),
@@ -184,6 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       _isAuthorized = isAuthorized;
+      dataService.updateMockEncyclopedia();
     });
 
     if (isAuthorized) {
