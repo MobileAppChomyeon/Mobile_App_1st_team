@@ -117,12 +117,9 @@ class UserDataService {
 
   // 식물 정보 저장
   Future<void> savePlantInfo({
-    String? nickname,
-    DateTime? startDate,
     DateTime? endDate,
-    // required String status,
-    required int growthStage,
-    required String imageUrl,
+    int? growthStage,
+    String? imageUrl,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -136,14 +133,16 @@ class UserDataService {
           .doc(user.uid)
           .collection('Plants')
           .doc('currentPlant');
-      await plantRef.set({
-        'nickname': nickname,
-        'startDate': startDate != null ? Timestamp.fromDate(startDate) : null,
-        'endDate': endDate != null ? Timestamp.fromDate(endDate) : null,
-        // 'status': status,
-        'growthStage': growthStage,
-        'imageUrl': imageUrl,
-      }, SetOptions(merge: true));
+
+      // 저장할 데이터를 동적으로 구성
+      final data = <String, dynamic>{};
+      if (endDate != null) data['endDate'] = Timestamp.fromDate(endDate);
+      if (growthStage != null) data['growthStage'] = growthStage;
+      if (imageUrl != null) data['imageUrl'] = imageUrl;
+
+      await plantRef.set(data, SetOptions(merge: true));
+
+      print('Plant info saved successfully');
     } catch (e) {
       print('Error saving plant info: $e');
     }
