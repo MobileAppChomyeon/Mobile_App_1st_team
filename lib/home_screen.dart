@@ -79,11 +79,13 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               // 식물 이미지
-              Image.asset(
-                plantImage!,
-                width: 100,
-                height: 100,
-              ),
+              plantImage != null
+                  ? Image.asset(
+                      plantImage!,
+                      width: 100,
+                      height: 100,
+                    )
+                  : Center(child: CircularProgressIndicator()),
               const SizedBox(height: 20),
               // 메시지
               Text(
