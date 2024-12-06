@@ -75,7 +75,8 @@ class SleepDataFetcher {
       print("수면 데이터 가져오기 성공: ${healthData.length}개의 데이터");
       if (healthData.isEmpty) {
         print("수면 데이터가 없어서 테스트 데이터를 생성합니다.");
-        return _createMockSleepData(endDate);
+        final daysToBring = endDate.difference(startDate).inDays.abs() + 1;
+        return _createMockSleepData(endDate, daysToBring);
       }
       return healthData;
     } catch (e) {
@@ -141,11 +142,11 @@ class SleepDataFetcher {
   }
 
   /// 테스트용 수면 데이터 생성
-  List<HealthDataPoint> _createMockSleepData(DateTime startDate) {
+  List<HealthDataPoint> _createMockSleepData(DateTime startDate, int days) {
     final List<HealthDataPoint> mockData = [];
     final Random random = Random();
 
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < days; i++) {
       final currentDate =
           startDate.subtract(Duration(days: i, minutes: random.nextInt(240)));
 
