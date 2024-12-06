@@ -4,6 +4,27 @@ import 'package:firebase_auth/firebase_auth.dart';
 class UserDataService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+  // 사용자 기본 정보 저장
+  Future<void> saveUserInfo({
+    required String backgroundImage,
+    required String description,
+  }) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('User not logged in');
+      return;
+    }
+
+    try {
+      final userRef = _db.collection('Users').doc(user.uid);
+      await userRef.set({
+        'backgroundImage': backgroundImage,
+        'description': description,
+      }, SetOptions(merge: true));
+    } catch (e) {
+      print('Error saving user info: $e');
+    }
+  }
 
   // **사용자 기본 정보 가져오기**
   Future<Map<String, dynamic>?> fetchUserInfo() async {
@@ -24,7 +45,6 @@ class UserDataService {
     return null;
   }
 
-  // 수면 정보 저장
   Future<void> saveSleepInfo({
     String? sleepStartTime,
     String? wakeUpTime,
@@ -75,6 +95,25 @@ class UserDataService {
     }
   }
 
+  Future<void> saveMockSleepInfo({required String date, required Map<String, dynamic> data}) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('User not logged in');
+      return null;
+    }
+
+    try {
+      await _db
+          .collection('Users')
+          .doc(user.uid)
+          .collection('SleepInfo')
+          .doc(date)
+          .set(data);
+      print('문서 $date 저장 성공');
+    } catch (e) {
+      print('Error saving document $date: $e');
+    }
+  }
 
   // **수면 정보 가져오기**
   Future<Map<String, dynamic>?> fetchSleepInfo({required String date}) async {
