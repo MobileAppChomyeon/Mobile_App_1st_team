@@ -75,6 +75,8 @@ flutter:
     - assets/flower/
     - assets/icons/
     - assets/images/
+    - assets/flower/silhouette/
+    - assets/flower/complete/
 
   fonts:
     - family: Pretendard

@@ -1,65 +1,77 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mobileapp/userData.dart';
+import 'package:intl/intl.dart';
 
 
-class PlantBook extends StatelessWidget {
+class PlantBook extends StatefulWidget {
   const PlantBook({super.key});
 
-  final List<Map<String, String?>> plantData = const [
-    {
-      'nickname': '요미미',
-      'species': '포인세티아',
-      'startDate': '23.10.01',
-      'endDate': null,
-      'silhouetteImage': 'assets/flower/s1.png',
-      'completeImage': 'assets/flower/s1_com.png',
-    },
-    {
-      'nickname': null,
-      'species': null,
-      'startDate': null,
-      'endDate': null,
-      'silhouetteImage': 'assets/flower/s1.png',
-      'completeImage': 'assets/flower/s1_com.png',
-    },
-    {
-      'nickname': '장미',
-      'species': '붉은 장미',
-      'startDate': '23.08.01',
-      'endDate': '23.09.12',
-      'silhouetteImage': 'assets/flower/s1.png',
-      'completeImage': 'assets/flower/s1_com.png',
-    },
-    {
-      'nickname': '라벤더',
-      'species': '향기로운 허브',
-      'startDate': '23.07.05',
-      'endDate': '23.08.20',
-      'silhouetteImage': 'assets/flower/s1.png',
-      'completeImage': 'assets/flower/s1_com.png',
-    },
-    {
-      'nickname': null,
-      'species': null,
-      'startDate': null,
-      'endDate': null,
-      'silhouetteImage': 'assets/flower/s1.png',
-      'completeImage': 'assets/flower/s1_com.png',
-    },{
-      'nickname': null,
-      'species': null,
-      'startDate': null,
-      'endDate': null,
-      'silhouetteImage': 'assets/flower/s1.png',
-      'completeImage': 'assets/flower/s1_com.png',
-    },{
-      'nickname': null,
-      'species': null,
-      'startDate': null,
-      'endDate': null,
-      'silhouetteImage': 'assets/flower/s1.png',
-      'completeImage': 'assets/flower/s1_com.png',
-    },
-  ];
+  @override
+  State<PlantBook> createState() => _PlantBookState();
+}
+
+class _PlantBookState extends State<PlantBook> {
+  final UserDataService userDataService = UserDataService();
+
+
+  // final List<Map<String, String?>> plantData = const [
+  //   {
+  //     'nickname': '요미미',
+  //     'species': '포인세티아',
+  //     'startDate': '23.10.01',
+  //     'endDate': null,
+  //     'silhouetteImage': 'assets/flower/s1.png',
+  //     'completeImage': 'assets/flower/s1_com.png',
+  //   },
+  //   {
+  //     'nickname': null,
+  //     'species': null,
+  //     'startDate': null,
+  //     'endDate': null,
+  //     'silhouetteImage': 'assets/flower/s1.png',
+  //     'completeImage': 'assets/flower/s1_com.png',
+  //   },
+  //   {
+  //     'nickname': '장미',
+  //     'species': '붉은 장미',
+  //     'startDate': '23.08.01',
+  //     'endDate': '23.09.12',
+  //     'silhouetteImage': 'assets/flower/s1.png',
+  //     'completeImage': 'assets/flower/s1_com.png',
+  //   },
+  //   {
+  //     'nickname': '라벤더',
+  //     'species': '향기로운 허브',
+  //     'startDate': '23.07.05',
+  //     'endDate': '23.08.20',
+  //     'silhouetteImage': 'assets/flower/s1.png',
+  //     'completeImage': 'assets/flower/s1_com.png',
+  //   },
+  //   {
+  //     'nickname': null,
+  //     'species': null,
+  //     'startDate': null,
+  //     'endDate': null,
+  //     'silhouetteImage': 'assets/flower/s1.png',
+  //     'completeImage': 'assets/flower/s1_com.png',
+  //   },{
+  //     'nickname': null,
+  //     'species': null,
+  //     'startDate': null,
+  //     'endDate': null,
+  //     'silhouetteImage': 'assets/flower/s1.png',
+  //     'completeImage': 'assets/flower/s1_com.png',
+  //   },{
+  //     'nickname': null,
+  //     'species': null,
+  //     'startDate': null,
+  //     'endDate': null,
+  //     'silhouetteImage': 'assets/flower/s1.png',
+  //     'completeImage': 'assets/flower/s1_com.png',
+  //   },
+  // ];
 
   @override
   Widget build(BuildContext context) {
@@ -78,27 +90,47 @@ class PlantBook extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(15.0),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 15,
-          mainAxisSpacing: 15,
-        ),
-        itemCount: plantData.length,
-        itemBuilder: (context, index) {
-          final plant = plantData[index];
-          return _buildPlantBookCard(context, plant);
-        },
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: userDataService.fetchPlantEncyclopedia(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('오류 발생: ${snapshot.error}'));
+          }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('식물 데이터가 없습니다.'));
+          }
+
+          final plantData = snapshot.data!;
+
+          return GridView.builder(
+            padding: const EdgeInsets.all(15.0),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 15,
+              mainAxisSpacing: 15,
+            ),
+            itemCount: plantData.length,
+            itemBuilder: (context, index) {
+              final plant = plantData[index];
+              return _buildPlantBookCard(context, plant);
+            },
+          );
+        }
       ),
     );
   }
 
-  Widget _buildPlantBookCard(BuildContext context, Map<String, String?> plant) {
-    final isCompleted = plant['endDate'] != null;
+  Widget _buildPlantBookCard(BuildContext context, Map<String, dynamic> plant) {
+    final isCompleted = plant['endDate'] != null; // 완료됨
     final isCurrent = plant['nickname'] != null && plant['endDate'] == null; // "지금 키우고 있어요!" 조건
     final imagePath =
-    isCompleted ? plant['completeImage']! : plant['silhouetteImage']!;
+    isCompleted ? plant['imageUrl']! : plant['silhouetteImage']!;
+
 
     return GestureDetector(
       onTap: () {
@@ -112,7 +144,7 @@ class PlantBook extends StatelessWidget {
             height: 140,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              // color: Colors.yellow,
+              color: Colors.white,
               image: DecorationImage(
                 image: AssetImage(imagePath),
                 fit: BoxFit.cover,
@@ -133,7 +165,7 @@ class PlantBook extends StatelessWidget {
                   children: [
                     // 아래 텍스트: 테두리 역할
                     Text(
-                      plant['endDate']!,
+                      DateFormat('yyyy.MM.dd').format((plant['endDate'] as Timestamp).toDate()),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,
@@ -145,7 +177,7 @@ class PlantBook extends StatelessWidget {
                     ),
                     // 위 텍스트: 실제 텍스트
                     Text(
-                      plant['endDate']!,
+                      DateFormat('yyyy.MM.dd').format((plant['endDate'] as Timestamp).toDate()),
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,
@@ -206,7 +238,7 @@ class PlantBook extends StatelessWidget {
     );
   }
 
-  void _showPlantBookDetail(BuildContext context, Map<String, String?> plant) {
+  void _showPlantBookDetail(BuildContext context, Map<String, dynamic> plant) {
     final isCompleted = plant['endDate'] != null;
 
     showDialog(
@@ -230,7 +262,7 @@ class PlantBook extends StatelessWidget {
                     image: DecorationImage(
                       image: AssetImage(
                         isCompleted
-                            ? plant['completeImage']!
+                            ? plant['imageUrl']!
                             : plant['silhouetteImage']!,
                       ),
                       fit: BoxFit.cover,
@@ -250,14 +282,14 @@ class PlantBook extends StatelessWidget {
                 if (plant['startDate'] != null) ...[
                   const SizedBox(height: 8),
                   Text(
-                    '만난 날짜: ${plant['startDate']}',
+                    '만난 날짜: ${DateFormat('yyyy.MM.dd').format((plant['startDate'] as Timestamp).toDate())}',
                     style: const TextStyle(fontSize: 16),
                   ),
                 ],
                 if (plant['endDate'] != null)...[
                   const SizedBox(height: 8),
                   Text(
-                    '다 키운 날짜: ${plant['endDate']}',
+                    '다 키운 날짜: ${DateFormat('yyyy.MM.dd').format((plant['endDate'] as Timestamp).toDate())}',
                     style: const TextStyle(fontSize: 16),
                   ),
                 ],

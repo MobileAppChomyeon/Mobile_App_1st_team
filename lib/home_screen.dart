@@ -5,6 +5,9 @@ import 'plantBook.dart';
 import 'goalSetting.dart';
 import 'weeklySleepData.dart';
 import 'plantSelectAgain.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mobileapp/userData.dart';
 
 // void main() {
 //   runApp(const Directionality(
@@ -35,25 +38,25 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final SleepDataFetcher _sleepDataFetcher = SleepDataFetcher();
+  final UserDataService dataService = UserDataService();
+  Map<String, dynamic>? currentPlantData;
   bool _isAuthorized = false;
   String _sleepDataText = '데이터 로딩 중...';
-
   String? backgroundImage;
   String? plantImage;
   String? plantName = '무리무리';
   String? sleepComment;
-  final int totalSleepDuration = 8; // 총 경험치
+  final int totalSleepDuration = 300; // 총 경험치
   final int sleepScore = 10; // 오늘 수면 점수
 
   @override
   void initState() {
     super.initState();
-    backgroundImage = 'assets/background/morning.png';
-    plantImage = 'assets/flower/daisy/daisy4.png';
     sleepComment = "어느정도 주무셨군요!\n오늘은 조금 더 일찍 잠에 들어 보세요";
     _initialize();
+    _initializePlant();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && totalSleepDuration >= 1.0) {
+      if (mounted && totalSleepDuration >= 100) {
         // 경험치 최대치되면!!
         _showPlantPopup();
       }
@@ -68,6 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.0),
           ),
@@ -75,11 +79,13 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               // 식물 이미지
-              Image.asset(
-                plantImage!,
-                width: 100,
-                height: 100,
-              ),
+              plantImage != null
+                  ? Image.asset(
+                      plantImage!,
+                      width: 100,
+                      height: 100,
+                    )
+                  : Center(child: CircularProgressIndicator()),
               const SizedBox(height: 20),
               // 메시지
               Text(
@@ -123,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ); // 다른 화면으로 이동
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4A6FA5), // 버튼 색상
+                  backgroundColor: const Color(0xFFB4C7E7), // 버튼 색상
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -133,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(
                     fontFamily: "Pretendard",
                     fontSize: 14,
-                    color: Colors.white,
+                    color: Colors.black,
                   ),
                 ),
               ),
@@ -144,11 +150,43 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _initializePlant() async {
+    currentPlantData = await dataService.fetchCurrentPlantInfo();
+    print("지금 키우는 식물 데이터");
+    print(currentPlantData);
+
+    if (currentPlantData != null) {
+      String plantId = currentPlantData!['plantId'];
+      String imageUrl = '';
+      if (totalSleepDuration < 100) {
+        imageUrl = 'assets/flower/$plantId/${plantId}1.png';
+        dataService.savePlantInfo(growthStage: 1, imageUrl: imageUrl);
+      } else if (totalSleepDuration < 300) {
+        imageUrl = 'assets/flower/$plantId/${plantId}2.png';
+        dataService.savePlantInfo(growthStage: 2, imageUrl: imageUrl);
+      } else if (totalSleepDuration < 500) {
+        imageUrl = 'assets/flower/$plantId/${plantId}3.png';
+        dataService.savePlantInfo(growthStage: 3, imageUrl: imageUrl);
+      } else {
+        imageUrl = 'assets/flower/$plantId/${plantId}4.png';
+        dataService.savePlantInfo(growthStage: 4, imageUrl: imageUrl);
+      }
+      plantName = currentPlantData!['nickname'];
+      backgroundImage = currentPlantData!['backgroundImage'];
+      plantImage = imageUrl;
+    } else {
+      plantName = '이름이 없어요';
+      backgroundImage = 'assets/background/morning.png';
+      plantImage = 'assets/flower/daisy/daisy4.png';
+    }
+  }
+
   Future<void> _initialize() async {
     bool isAuthorized = await _sleepDataFetcher.requestPermissions();
 
     setState(() {
       _isAuthorized = isAuthorized;
+      dataService.updateMockEncyclopedia();
     });
 
     if (isAuthorized) {
@@ -162,10 +200,10 @@ class _HomeScreenState extends State<HomeScreen> {
         } else {
           print('수면 데이터: $sleepData'); // 디버깅용 로그
           _sleepDataText = '11';
-              // sleepData
-              // .map((data) =>
-              //     '${data.type} ${data.dateFrom.month}/${data.dateFrom.day}${data.dateFrom.hour}:${data.dateFrom.minute} - ${data.dateTo.month}/${data.dateTo.day}${data.dateTo.hour}:${data.dateTo.minute}')
-              // .join('\n');
+          // sleepData
+          // .map((data) =>
+          //     '${data.type} ${data.dateFrom.month}/${data.dateFrom.day}${data.dateFrom.hour}:${data.dateFrom.minute} - ${data.dateTo.month}/${data.dateTo.day}${data.dateTo.hour}:${data.dateTo.minute}')
+          // .join('\n');
         }
       });
     }
@@ -185,10 +223,12 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // 배경 이미지
           Positioned.fill(
-            child: Image.asset(
-              backgroundImage!,
-              fit: BoxFit.cover,
-            ),
+            child: backgroundImage != null
+                ? Image.asset(
+                    backgroundImage!,
+                    fit: BoxFit.cover,
+                  )
+                : Center(child: CircularProgressIndicator()),
           ),
           // Progress Bar
           Align(
@@ -248,10 +288,12 @@ class _HomeScreenState extends State<HomeScreen> {
             right: 0,
             child: SizedBox(
               width: MediaQuery.of(context).size.width, // 화면 가로 크기
-              child: Image.asset(
-                plantImage!,
-                fit: BoxFit.fitWidth, // 가로 크기에 맞춰서 비율 유지
-              ),
+              child: plantImage != null
+                  ? Image.asset(
+                      plantImage!,
+                      fit: BoxFit.fitWidth, // 가로 크기에 맞춰서 비율 유지
+                    )
+                  : Center(child: CircularProgressIndicator()),
             ),
           ),
           Align(
