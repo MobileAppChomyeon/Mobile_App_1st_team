@@ -169,7 +169,7 @@ class PlantSelect extends StatelessWidget {
                         ),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4A6FA5),
+                            backgroundColor: const Color(0xFFB4C7E7),
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 20, vertical: 10),
                             shape: RoundedRectangleBorder(
@@ -193,7 +193,7 @@ class PlantSelect extends StatelessWidget {
                           },
                           child: const Text(
                             '선택하기',
-                            style: TextStyle(color: Colors.white),
+                            style: TextStyle(color: Colors.black),
                           ),
                         ),
                       ],

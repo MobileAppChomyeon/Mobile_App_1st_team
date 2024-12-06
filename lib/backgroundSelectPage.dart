@@ -184,7 +184,7 @@ class _BackgroundSelectPageState extends State<BackgroundSelectPage> {
             right: 50,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4A6FA5),
+                backgroundColor: const Color(0xFFB4C7E7),
                 minimumSize: const Size(320, 60),
                 padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -205,7 +205,7 @@ class _BackgroundSelectPageState extends State<BackgroundSelectPage> {
               },
               child: const Text(
                 '선택하기',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.black),
               ),
             ),
           ),

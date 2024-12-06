@@ -1,32 +1,80 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'piechart.dart';
+import 'userData.dart';
 
-class Daily extends StatelessWidget {
-  final DateTime chosen;
-  final String sleepStartTime = '11:30 PM';
-  final String wakeupTime = '8:31 AM';
-  final int remSleep = 80;
-  final int lightSleep = 143;
-  final int deepSleep = 59;
-  int totalSleepDuration = 0;
-  final int sleepScore = 100; // 아직 사용 못함
-  final int experiencePoints = 60;
+class Daily extends StatefulWidget {
+  final String? chosen;  // chosen 값을 전달받음
 
   Daily({
-    super.key,
+    Key? key,
     required this.chosen,
-  });
+  }) : super(key: key);
 
-  Map<String, int> minToHour(int totalMinutes) {
-    int hours = totalMinutes ~/ 60;
-    int minutes = totalMinutes % 60;
+  @override
+  State<Daily> createState() => _DailyState();
+}
 
-    return {
-      'hours': hours,
-      'minutes': minutes,
-    };
+class _DailyState extends State<Daily> {
+  String month = '';
+  String day = '';
+
+  String sleepStartTime = '11:00 PM';
+  String wakeupTime = '8:31 AM';
+  int remSleep = 80;
+  int lightSleep = 143;
+  int deepSleep = 59;
+  int totalSleepDuration = 0;
+  int sleepScore = 100;
+  int experiencePoints = 60;
+
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  void setDate(String date) {
+    List<String> dateParts = date.split('-');
+
+    if (dateParts.length == 3) {
+      month = dateParts[1]; // 'MM' 부분 추출
+      int dayInt = int.parse(dateParts[2]); // 'dd' 부분 추출
+      day = dayInt.toString();
+    } else {
+      print('Invalid date format');
+    }
   }
+
+  @override
+  void initState() {
+    super.initState();
+    setDate(widget.chosen!);
+    loadDailySleepData();
+  }
+
+  // 수정된 시간 변환 함수 (AM/PM 처리)
+  String convertToAMPM(String time) {
+    String period = time.contains('오후') ? 'PM' : 'AM';
+    time = time.replaceAll(RegExp(r'오전|오후'), '').trim();
+
+    time = time.replaceAll('시', ':').replaceAll('분', '').trim();
+
+    List<String> hourMinuteParts = time.split(':');
+    if (hourMinuteParts.length != 2) {
+      throw FormatException("Invalid time format");
+    }
+
+    int hour = int.parse(hourMinuteParts[0].trim());
+    String minute = hourMinuteParts[1].trim();
+
+    if (period == 'PM' && hour != 12) {
+      hour += 12;
+    } else if (period == 'AM' && hour == 12) {
+      hour = 0;
+    }
+
+    return '${hour % 12 == 0 ? 12 : hour % 12}:$minute $period';
+  }
+
 
   int calculateDuration(String startTime, String endTime) {
     DateTime parseTime(String time, bool isPM) {
@@ -52,6 +100,55 @@ class Daily extends StatelessWidget {
 
     Duration difference = end.difference(start);
     return difference.inMinutes;
+  }
+
+  void loadDailySleepData() async {
+    final userService = UserDataService();
+
+    try {
+      final sleepInfo = await userService.fetchSleepInfo(date: widget.chosen!);
+      if (sleepInfo != null) {
+        print('Loaded Sleep Data!');  // 로그 추가
+        if (mounted) {
+          setState(() {
+            deepSleep = sleepInfo['deepSleep'] ?? deepSleep;
+            experiencePoints = sleepInfo['experience'] ?? experiencePoints;
+            lightSleep = sleepInfo['lightSleep'] ?? lightSleep;
+            remSleep = sleepInfo['remSleep'] ?? remSleep;
+            sleepScore = sleepInfo['sleepScore'] ?? sleepScore;
+            sleepStartTime = sleepInfo['sleepStartTime'] ?? sleepStartTime;
+            totalSleepDuration = sleepInfo['totalSleepDuration'] ?? totalSleepDuration;
+            wakeupTime = sleepInfo['wakeUpTime'] ?? wakeupTime;
+
+            print('SleepStartTime (before convert): $sleepStartTime');
+            print('WakeUpTime (before convert): $wakeupTime');
+
+            // 데이터를 로드한 후에 AM/PM 변환
+            sleepStartTime = convertToAMPM(sleepStartTime);
+            wakeupTime = convertToAMPM(wakeupTime);
+
+            print('SleepStartTime (after convert): $sleepStartTime');
+            print('WakeUpTime (after convert): $wakeupTime');
+
+            totalSleepDuration = calculateDuration(sleepStartTime, wakeupTime);
+          });
+        }
+      } else {
+        print('No sleep info found for the given date.');
+      }
+    } catch (e) {
+      print('Error loading sleep goal: $e');
+    }
+  }
+
+  Map<String, int> minToHour(int totalMinutes) {
+    int hours = totalMinutes ~/ 60;
+    int minutes = totalMinutes % 60;
+
+    return {
+      'hours': hours,
+      'minutes': minutes,
+    };
   }
 
   @override
@@ -83,7 +180,7 @@ class Daily extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "${chosen.month}월 ${chosen.day}일의 수면 기록",
+                "${month}월 ${day}일의 수면 기록",
                 style: TextStyle(fontWeight: FontWeight.normal, fontSize: 19),
               ),
               SizedBox(height: size.height * 0.02),
