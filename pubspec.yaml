@@ -43,6 +43,7 @@ dependencies:
   google_sign_in: ^6.2.2
   health: ^11.0.0
   cloud_firestore: ^5.5.0
+  ntp: ^2.0.0
 
 dev_dependencies:
   flutter_test:

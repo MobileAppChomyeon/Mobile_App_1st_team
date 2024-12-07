@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ntp/ntp.dart';
 
 class UserDataService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -46,6 +47,7 @@ class UserDataService {
   }
 
   Future<void> saveSleepInfo({
+    required String date,
     String? sleepStartTime,
     String? wakeUpTime,
     int? remSleep,
@@ -56,6 +58,9 @@ class UserDataService {
     int? experience,
     int? targetHours,
     String? targetSleepTime,
+    String? scheduleScore,
+    String? durationScore,
+    String? qualityScore,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -63,12 +68,11 @@ class UserDataService {
       return;
     }
 
-    final today = DateTime.now().toIso8601String().split('T')[0];
     final sleepRef = _db
         .collection('Users')
         .doc(user.uid)
         .collection('SleepInfo')
-        .doc(today);
+        .doc(date);
 
     // 필드가 null이 아닌 경우에만 Firestore에 포함
     final sleepData = <String, dynamic>{
@@ -85,33 +89,19 @@ class UserDataService {
           if (targetHours != null) 'targetHours': targetHours,
           if (targetSleepTime != null) 'targetSleepTime': targetSleepTime,
         },
+      if (scheduleScore != null || durationScore != null || qualityScore != null)
+        'qualities': {
+          if (scheduleScore != null) 'scheduleScore': scheduleScore,
+          if (durationScore != null) 'durationScore': durationScore,
+          if (qualityScore != null) 'qualityScore': qualityScore,
+        },
     };
 
     try {
-      await sleepRef.set(sleepData, SetOptions(merge: true)); // 병합 저장
-      print('Sleep info saved successfully');
+      await sleepRef.update(sleepData); // 기존 필드를 업데이트
+      print('Sleep info updated successfully');
     } catch (e) {
       print('Error saving sleep info: $e');
-    }
-  }
-
-  Future<void> saveMockSleepInfo({required String date, required Map<String, dynamic> data}) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      print('User not logged in');
-      return null;
-    }
-
-    try {
-      await _db
-          .collection('Users')
-          .doc(user.uid)
-          .collection('SleepInfo')
-          .doc(date)
-          .set(data);
-      print('문서 $date 저장 성공');
-    } catch (e) {
-      print('Error saving document $date: $e');
     }
   }
 
@@ -132,6 +122,59 @@ class UserDataService {
           .get();
       if (sleepDoc.exists) {
         return sleepDoc.data();
+      }
+    } catch (e) {
+      print('Error fetching sleep info: $e');
+    }
+    return null;
+  }
+
+  Future<void> saveGoal({
+    required String date,
+    int? targetHours,
+    String? targetSleepTime,
+  }) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('User not logged in');
+      return;
+    }
+
+    final goalRef = _db
+        .collection('Users')
+        .doc(user.uid)
+        .collection('Goal')
+        .doc(date);
+
+    final goalData = <String, dynamic>{
+      if (targetHours != null) 'targetHours': targetHours,
+      if (targetSleepTime != null) 'targetSleepTime': targetSleepTime,
+    };
+
+    try {
+      await goalRef.set(goalData);
+      print('Sleep info updated successfully');
+    } catch (e) {
+      print('Error saving sleep info: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>?> fetchGoal({required String date}) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('User not logged in');
+      return null;
+    }
+
+    try {
+      final goalDoc = await _db
+          .collection('Users')
+          .doc(user.uid)
+          .collection('Goal')
+          .doc(date)
+          .get();
+      if (goalDoc.exists) {
+        return goalDoc.data();
       }
     } catch (e) {
       print('Error fetching sleep info: $e');
@@ -267,13 +310,13 @@ class UserDataService {
           .collection('plantsList');
 
       await encyclopediaRef.doc('other1').update({
-        'startDate': Timestamp.fromDate(DateTime(2024,11,3)),
-        'endDate': Timestamp.fromDate(DateTime(2024,12,4)),
+        'startDate': Timestamp.fromDate(DateTime(2024, 11, 3)),
+        'endDate': Timestamp.fromDate(DateTime(2024, 12, 4)),
         'nickname': '첫째',
       });
       await encyclopediaRef.doc('other3').update({
-        'startDate': Timestamp.fromDate(DateTime(2024,10,1)),
-        'endDate': Timestamp.fromDate(DateTime(2024,11,3)),
+        'startDate': Timestamp.fromDate(DateTime(2024, 10, 1)),
+        'endDate': Timestamp.fromDate(DateTime(2024, 11, 3)),
         'nickname': '둘째',
       });
       print('Mock data inserted');
