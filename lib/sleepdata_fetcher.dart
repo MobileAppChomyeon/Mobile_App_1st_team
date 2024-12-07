@@ -2,23 +2,22 @@ import 'package:health/health.dart';
 import 'dart:math';
 // part of 'health';
 
+// 수면 데이터 모델 클래스 추가
+class SleepData {
+  final DateTime? bedTime; // 잠든 시간
+  final DateTime? wakeTime; // 일어난 시간
+  final Duration lightSleep; // 얕은 수면
+  final Duration deepSleep; // 깊은 수면
+  final Duration remSleep; // 렘수면
 
-  // 수면 데이터 모델 클래스 추가
-  class SleepData {
-    final DateTime? bedTime;      // 잠든 시간
-    final DateTime? wakeTime;     // 일어난 시간
-    final Duration lightSleep;    // 얕은 수면
-    final Duration deepSleep;     // 깊은 수면
-    final Duration remSleep;      // 렘수면
-
-    SleepData({
-      this.bedTime,
-      this.wakeTime,
-      this.lightSleep = Duration.zero,
-      this.deepSleep = Duration.zero,
-      this.remSleep = Duration.zero,
-    });
-  }
+  SleepData({
+    this.bedTime,
+    this.wakeTime,
+    this.lightSleep = Duration.zero,
+    this.deepSleep = Duration.zero,
+    this.remSleep = Duration.zero,
+  });
+}
 
 class SleepDataFetcher {
   static final SleepDataFetcher _instance = SleepDataFetcher._internal();
@@ -41,7 +40,6 @@ class SleepDataFetcher {
   // private 생성자
   SleepDataFetcher._internal();
 
-
   /// HealthKit / Google Fit 초기화
   Future<void> configure() async {
     await _health.configure();
@@ -51,7 +49,7 @@ class SleepDataFetcher {
   Future<bool> requestPermissions() async {
     try {
       final bool requested =
-      await _health.requestAuthorization(_sleepDataTypes);
+          await _health.requestAuthorization(_sleepDataTypes);
       if (requested) {
         print("권한 요청 성공: 수면 데이터에 접근 가능.");
       } else {
@@ -150,21 +148,22 @@ class SleepDataFetcher {
 
     for (int i = 0; i < days; i++) {
       final currentDate =
-      startDate.subtract(Duration(days: i, minutes: random.nextInt(240)));
+          startDate.subtract(Duration(days: i, minutes: random.nextInt(240)));
 
       // 총 수면 시간 (240~720분 -> 4시간 ~ 12시간)
       final totalSleepMinutes = 240 + random.nextInt(481); // 최소 240분, 최대 720분
       final sleepStart =
-      currentDate.subtract(Duration(minutes: totalSleepMinutes));
+          currentDate.subtract(Duration(minutes: totalSleepMinutes));
+
       final sleepEnd = currentDate;
 
       // 각 수면 단계의 시간 생성
       int remSleepMinutes =
-      (30 + random.nextDouble() * 90).toInt(); // 30 ~ 120분
+          (30 + random.nextDouble() * 90).toInt(); // 30 ~ 120분
       int lightSleepMinutes =
-      (60 + random.nextDouble() * 60).toInt(); // 60 ~ 120분
+          (60 + random.nextDouble() * 60).toInt(); // 60 ~ 120분
       int deepSleepMinutes =
-      (30 + random.nextDouble() * 90).toInt(); // 30 ~ 120분
+          (30 + random.nextDouble() * 90).toInt(); // 30 ~ 120분
 
       // 수면 단계 합이 총 수면 시간 초과 시 조정
       int totalStageMinutes =
@@ -184,12 +183,12 @@ class SleepDataFetcher {
       // 얕은 수면 시작 및 종료 시간
       final lightSleepStart = remSleepEnd;
       final lightSleepEnd =
-      lightSleepStart.add(Duration(minutes: lightSleepMinutes));
+          lightSleepStart.add(Duration(minutes: lightSleepMinutes));
 
       // 깊은 수면 시작 및 종료 시간
       final deepSleepStart = lightSleepEnd;
       final deepSleepEnd =
-      deepSleepStart.add(Duration(minutes: deepSleepMinutes));
+          deepSleepStart.add(Duration(minutes: deepSleepMinutes));
 
       // 총 수면 데이터 생성
       mockData.add(HealthDataPoint(

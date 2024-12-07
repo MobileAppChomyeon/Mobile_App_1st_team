@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? plantImage;
   String? plantName = '무리무리';
   String? sleepComment;
-  final int totalSleepDuration = 300; // 총 경험치
+  int totalSleepDuration = 0; // 총 경험치
   final int sleepScore = 10; // 오늘 수면 점수
 
   DateTime currentTime = DateTime.now();
@@ -68,6 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
     getCurrentTime();
     _initialize();
     _initializePlant();
+    updateExperience(sleepScore);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && totalSleepDuration >= 100) {
         // 경험치 최대치되면!!
@@ -455,6 +456,54 @@ class _HomeScreenState extends State<HomeScreen> {
           // .join('\n');
         }
       });
+    }
+  }
+
+  /// 경험치 업데이트 함수
+  Future<void> updateExperience(int todayScore) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('User not logged in');
+      return;
+    }
+
+    try {
+      final experienceRef = FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.uid)
+          .collection('Experience')
+          .doc('currentExperience');
+      final docSnapshot = await experienceRef.get();
+
+      if (!docSnapshot.exists) {
+        print('Experience document does not exist.');
+        return;
+      }
+
+      final data = docSnapshot.data();
+      final lastUpdatedDate = data?['date'] ?? '';
+      final totalScore = data?['totalScore'] ?? 0;
+      totalSleepDuration = totalScore;
+      final todayDate = DateTime.now().toIso8601String().split('T')[0];
+
+      // 날짜 비교
+      if (lastUpdatedDate == todayDate) {
+        print('Experience already updated for today.');
+        return;
+      }
+
+      // 오늘 처음 실행이므로 업데이트
+      final updatedTotalScore = totalScore + todayScore;
+
+      await experienceRef.update({
+        'date': todayDate,
+        'totalScore': updatedTotalScore,
+        'todayScore': todayScore,
+      });
+
+      print('Experience updated successfully.');
+    } catch (e) {
+      print('Error updating experience: $e');
     }
   }
 
