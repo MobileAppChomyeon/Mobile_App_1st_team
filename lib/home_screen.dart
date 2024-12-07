@@ -288,6 +288,11 @@ class _HomeScreenState extends State<HomeScreen> {
           print('$today: Goal 데이터를 이전 데이터로 채웠습니다.');
         } else {
           print('$today: Goal 데이터도 없고 이전 데이터도 없습니다. 기본값 사용.');
+          await userService.saveGoal(
+            date: today,
+            targetHours: 8,
+            targetSleepTime: '오후 11시',
+          );
         }
       }
 

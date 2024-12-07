@@ -98,7 +98,7 @@ class UserDataService {
     };
 
     try {
-      await sleepRef.update(sleepData); // 기존 필드를 업데이트
+      await sleepRef.set(sleepData, SetOptions(merge:true)); // 기존 필드를 업데이트
       print('Sleep info updated successfully');
     } catch (e) {
       print('Error saving sleep info: $e');
