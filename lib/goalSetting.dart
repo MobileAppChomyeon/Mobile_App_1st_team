@@ -24,8 +24,8 @@ class _GoalSettingState extends State<GoalSetting> {
     tomorrow = currentTime.toIso8601String().split('T')[0]; // 현재 날짜 기준 내일 날짜 설정
 
     final sleepInfo = await userService.fetchSleepInfo(date: tomorrow);
-    if (sleepInfo?['deepSleep'] != null) { // 데이터가 있으면 내일 sleepgoal
-      currentTime = currentTime.toUtc().add(Duration(hours: 9));
+    if (sleepInfo?['deepSleep'] == null) { // 데이터가 있으면 내일 sleepgoal
+      currentTime = currentTime.toUtc().add(Duration(hours: 33));
       tomorrow = currentTime.toIso8601String().split('T')[0];
     }
     print(tomorrow);

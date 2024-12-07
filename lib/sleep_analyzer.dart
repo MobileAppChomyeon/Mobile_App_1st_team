@@ -17,7 +17,7 @@ class SleepAnalyzer {
       return 0;  // 수면 데이터가 없는 경우
     }
 
-    int score = 100;
+    int score = 0;
     
     score += _calculateBedTimeScore(sleepData.bedTime!);
     score += _calculateWakeTimeScore(sleepData.wakeTime!);

@@ -36,6 +36,7 @@ class _WeeklyState extends State<Weekly> {
   List<Map<String, dynamic>> experienceDateList = []; // 날짜와 경험치 리스트
   DateTime todayDate = DateTime.now();
   String today = '';
+  bool isUpdate = true;
 
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   bool isLoading = true;
@@ -60,6 +61,7 @@ class _WeeklyState extends State<Weekly> {
           todayDate = currentDate.toUtc().subtract(Duration(hours: 15));
           today = todayDate.toIso8601String().split('T')[0];
         });
+        isUpdate = true;
         final sleepInfo = await userService.fetchSleepInfo(date: today);
         if (mounted) {
           setState(() {
@@ -67,6 +69,7 @@ class _WeeklyState extends State<Weekly> {
             message = getSleepFeedback(todaySleepScore);
           });
         }
+        isUpdate = false;
       } else {
         if (mounted) {
           setState(() {
@@ -77,6 +80,16 @@ class _WeeklyState extends State<Weekly> {
       }
     } catch (e) {
       print('Error loading sleep goal: $e');
+    }
+  }
+
+  void checkUpdate() async {
+    if (isUpdate) {
+      DateTime currentDate = await NTP.now();
+      setState(() {
+        todayDate = currentDate.toUtc().subtract(Duration(hours: 15));
+        today = todayDate.toIso8601String().split('T')[0];
+      });
     }
   }
 
@@ -225,6 +238,7 @@ class _WeeklyState extends State<Weekly> {
                 onTap: () {
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) {
+                        checkUpdate();
                         return Daily(
                           chosen: today,
                         );

@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:health/health.dart';
@@ -45,6 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Map<String, dynamic>? currentPlantData;
   bool _isAuthorized = false;
   String _sleepDataText = '데이터 로딩 중...';
+  bool _updateSleepDataText = false;
   String? backgroundImage;
   String? plantImage;
   String? plantName = '무리무리';
@@ -96,10 +99,10 @@ class _HomeScreenState extends State<HomeScreen> {
               // 식물 이미지
               plantImage != null
                   ? Image.asset(
-                      plantImage!,
-                      width: 100,
-                      height: 100,
-                    )
+                plantImage!,
+                width: 100,
+                height: 100,
+              )
                   : Center(child: CircularProgressIndicator()),
               const SizedBox(height: 20),
               // 메시지
@@ -239,9 +242,9 @@ class _HomeScreenState extends State<HomeScreen> {
           await userService.saveSleepInfo(
             date: today,
             sleepStartTime:
-                mockData[dayIndex * 4].dateFrom.toIso8601String().split('T')[1],
+            mockData[dayIndex * 4].dateFrom.toIso8601String().split('T')[1],
             wakeUpTime:
-                mockData[dayIndex * 4].dateTo.toIso8601String().split('T')[1],
+            mockData[dayIndex * 4].dateTo.toIso8601String().split('T')[1],
             remSleep: rem,
             lightSleep: light,
             deepSleep: deep,
@@ -341,15 +344,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final period = match.group(1); // '오전' 또는 '오후'
     final rawHour = int.parse(match.group(2)!); // 시
-    final rawMinute = match.group(3) != null ? int.parse(match.group(3)!) : 0; // 분
+    final rawMinute =
+    match.group(3) != null ? int.parse(match.group(3)!) : 0; // 분
 
     int hour = period == '오후' && rawHour != 12 ? rawHour + 12 : rawHour;
     hour = period == '오전' && rawHour == 12 ? 0 : hour;
 
     return {'hour': hour, 'minute': rawMinute};
   }
-
-
 
   void updateScore(DateTime startDate, List sleepDataList) async {
     final userService = UserDataService();
@@ -371,14 +373,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
         var dayIndex = i;
 
-
         int rem = (sleepDataList[dayIndex * 4 + 3].value as NumericHealthValue)
             .numericValue
             .toInt();
         int deep = (sleepDataList[dayIndex * 4 + 2].value as NumericHealthValue)
             .numericValue
             .toInt();
-        int light = (sleepDataList[dayIndex * 4 + 1].value as NumericHealthValue)
+        int light =
+        (sleepDataList[dayIndex * 4 + 1].value as NumericHealthValue)
             .numericValue
             .toInt();
         int remHour = rem ~/ 60;
@@ -393,7 +395,6 @@ class _HomeScreenState extends State<HomeScreen> {
           remSleep: Duration(hours: rem ~/ 60, minutes: rem % 60), // REM 수면
         );
 
-
         final GoalData = await userService.fetchGoal(date: today);
         if (GoalData == null) {
           print("Goal data is missing for $today. Skipping.");
@@ -405,12 +406,13 @@ class _HomeScreenState extends State<HomeScreen> {
         int sleepHour = timeResult['hour']!;
         int sleepMinute = timeResult['minute']!;
 
-        final preferredBedTime = DateTime(
-            currentDate.year, currentDate.month, currentDate.day - 1, sleepHour, sleepMinute);
+        final preferredBedTime = DateTime(currentDate.year, currentDate.month,
+            currentDate.day - 1, sleepHour, sleepMinute);
         final preferredSleepTime = Duration(hours: GoalData['targetHours']);
         final preferredWakeTime = preferredBedTime.add(preferredSleepTime);
 
-        print('목표 -> 취침시간: $preferredBedTime, 기상시간: $preferredWakeTime, 총 수면시간: $preferredSleepTime');
+        print(
+            '목표 -> 취침시간: $preferredBedTime, 기상시간: $preferredWakeTime, 총 수면시간: $preferredSleepTime');
 
         final sleepAnalyzer = SleepAnalyzer(
           preferredBedTime: preferredBedTime,
@@ -430,13 +432,16 @@ class _HomeScreenState extends State<HomeScreen> {
           durationScore: qualities[1],
           qualityScore: qualities[2],
         );
-
       }
       print('테스트 수면 점수 저장 성공!');
       String today = currentTime.toIso8601String().split('T')[0];
       final SleepInfo = await userService.fetchSleepInfo(date: today);
       int score = SleepInfo?['sleepScore'] ?? 0;
-      message = getSleepFeedback(score);
+      _sleepDataText = getSleepFeedback(score);
+      setState(() {
+        _updateSleepDataText = true;
+      });
+      print("message: $message");
     } catch (e) {
       print('Error saving mock sleep data: $e');
     }
@@ -544,9 +549,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     // TODO: Progress Bar 비율 계산, 레벨 나누기
     final double totalProgress =
-        (totalSleepDuration / 100).clamp(0.0, 1.0); // 0~1 범위로 제한
+    (totalSleepDuration / 100).clamp(0.0, 1.0); // 0~1 범위로 제한
     final double todayProgress =
-        (sleepScore / 100).clamp(0.0, 1.0); // 0~1 범위로 제한
+    (sleepScore / 100).clamp(0.0, 1.0); // 0~1 범위로 제한
     final double maxWidth = MediaQuery.of(context).size.width - 32; // 좌우 여백 적용
 
     return Scaffold(
@@ -556,9 +561,9 @@ class _HomeScreenState extends State<HomeScreen> {
           Positioned.fill(
             child: backgroundImage != null
                 ? Image.asset(
-                    backgroundImage!,
-                    fit: BoxFit.cover,
-                  )
+              backgroundImage!,
+              fit: BoxFit.cover,
+            )
                 : Center(child: CircularProgressIndicator()),
           ),
           // Progress Bar
@@ -621,9 +626,9 @@ class _HomeScreenState extends State<HomeScreen> {
               width: MediaQuery.of(context).size.width, // 화면 가로 크기
               child: plantImage != null
                   ? Image.asset(
-                      plantImage!,
-                      fit: BoxFit.fitWidth, // 가로 크기에 맞춰서 비율 유지
-                    )
+                plantImage!,
+                fit: BoxFit.fitWidth, // 가로 크기에 맞춰서 비율 유지
+              )
                   : Center(child: CircularProgressIndicator()),
             ),
           ),
@@ -692,7 +697,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: 10,
                       fit: BoxFit.contain,
                     ),
-                    Text(
+                    _updateSleepDataText
+                        ? Text(
                       _isAuthorized ? _sleepDataText : "권한 허용 필요",
                       style: const TextStyle(
                           fontFamily: 'Pretendard',
@@ -700,6 +706,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.black,
                           fontWeight: FontWeight.w300),
                       textAlign: TextAlign.center,
+                    )
+                        : Center(
+                      child: CircularProgressIndicator(),
                     ),
                     SvgPicture.asset(
                       'assets/icons/dquote2.svg', // SVG 파일 경로
@@ -783,3 +792,4 @@ class PlantRoomName extends StatelessWidget {
     );
   }
 }
+
