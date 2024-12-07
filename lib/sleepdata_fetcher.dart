@@ -154,6 +154,7 @@ class SleepDataFetcher {
       final totalSleepMinutes = 240 + random.nextInt(481); // 최소 240분, 최대 720분
       final sleepStart =
           currentDate.subtract(Duration(minutes: totalSleepMinutes));
+
       final sleepEnd = currentDate;
 
       // 각 수면 단계의 시간 생성

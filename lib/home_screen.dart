@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:health/health.dart';
 import 'package:mobileapp/plantSelect.dart';
+import 'package:ntp/ntp.dart';
 import 'plantBook.dart';
 import 'goalSetting.dart';
 import 'weeklySleepData.dart';
@@ -8,12 +10,13 @@ import 'plantSelectAgain.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mobileapp/userData.dart';
+import 'package:mobileapp/sleep_analyzer.dart';
+import 'sleepdata_fetcher.dart';
 
 // void main() {
 //   runApp(const Directionality(
 //       textDirection: TextDirection.ltr, child: HomeScreen()));
 // }
-import 'sleepdata_fetcher.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -49,10 +52,20 @@ class _HomeScreenState extends State<HomeScreen> {
   int totalSleepDuration = 0; // 총 경험치
   final int sleepScore = 10; // 오늘 수면 점수
 
+  DateTime currentTime = DateTime.now();
+
+  void getCurrentTime() async {
+    DateTime today = await NTP.now();
+    setState(() {
+      currentTime = today.toUtc().add(Duration(hours: 9));
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     sleepComment = "어느정도 주무셨군요!\n오늘은 조금 더 일찍 잠에 들어 보세요";
+    getCurrentTime();
     _initialize();
     _initializePlant();
     updateExperience(sleepScore);
@@ -65,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showPlantPopup() {
-    DateTime now = DateTime.now();
+    DateTime now = currentTime;
     int daysTaken = 30; // now.difference(startDate).inDays; // 걸린 날짜 계산
 
     showDialog(
@@ -182,6 +195,234 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void updateSleepData(DateTime startDate, List mockData) async {
+    final userService = UserDataService();
+    int duration = currentTime.difference(startDate).inDays;
+
+    try {
+      print("Duration (days): $duration");
+      print("MockData length: ${mockData.length}");
+      if (mockData.length < duration * 4) {
+        print("Insufficient mock data! Exiting update.");
+        return;
+      }
+
+      for (int i = 0; i < duration; i++) {
+        final currentDate = startDate.add(Duration(days: i+1));
+        final today = currentDate.toIso8601String().split('T')[0];
+        var dayIndex = i;
+
+        try {
+          final rem = (mockData[dayIndex * 4 + 3].value as NumericHealthValue)
+              .numericValue
+              .toInt();
+          final light = (mockData[dayIndex * 4 + 1].value as NumericHealthValue)
+              .numericValue
+              .toInt();
+          final deep = (mockData[dayIndex * 4 + 2].value as NumericHealthValue)
+              .numericValue
+              .toInt();
+          final total = (mockData[dayIndex * 4].value as NumericHealthValue)
+              .numericValue
+              .toInt();
+
+          print("Saving data for day $dayIndex:");
+          print("Sleep Start: ${mockData[dayIndex * 4].dateFrom}");
+          print("Wake Up: ${mockData[dayIndex * 4].dateTo}");
+          print("REM Sleep: $rem");
+          print("Light Sleep: $light");
+          print("Deep Sleep: $deep");
+          print("Total Sleep Duration: $total");
+
+          // Firestore 저장
+          await userService.saveSleepInfo(
+            date: today,
+            sleepStartTime:
+                mockData[dayIndex * 4].dateFrom.toIso8601String().split('T')[1],
+            wakeUpTime:
+                mockData[dayIndex * 4].dateTo.toIso8601String().split('T')[1],
+            remSleep: rem,
+            lightSleep: light,
+            deepSleep: deep,
+            totalSleepDuration: total,
+            targetHours: 8,
+            targetSleepTime: '오후 11시',
+          );
+        } catch (e) {
+          print("Error processing data for day $dayIndex: $e");
+        }
+      }
+      print('테스트 수면 데이터 저장 성공!');
+    } catch (e) {
+      print('Error saving mock sleep data: $e');
+    }
+  }
+
+  Future<void> updateGoal(DateTime startDate) async {
+    final userService = UserDataService();
+    int duration = currentTime.difference(startDate).inDays;
+
+    try {
+      Map<String, dynamic>? lastKnownGoal;
+
+      // 1. Goal 데이터를 채우기
+      for (int i = 0; i <= duration; i++) {
+        final currentDate = startDate.add(Duration(days: i+1));
+        final today = currentDate.toIso8601String().split('T')[0];
+
+        // GoalData 가져오기
+        final GoalData = await userService.fetchGoal(date: today);
+
+        if (GoalData != null) {
+          // Goal 데이터가 존재하면 최신 데이터로 갱신
+          lastKnownGoal = {
+            'targetHours': GoalData['targetHours'] as int,
+            'targetSleepTime': GoalData['targetSleepTime'] as String,
+          };
+        } else if (lastKnownGoal != null) {
+          // Goal 데이터가 없고 마지막으로 알려진 Goal 데이터가 있으면 저장
+          await userService.saveGoal(
+            date: today,
+            targetHours: lastKnownGoal['targetHours'] as int,
+            targetSleepTime: lastKnownGoal['targetSleepTime'] as String,
+          );
+          print('$today: Goal 데이터를 이전 데이터로 채웠습니다.');
+        } else {
+          print('$today: Goal 데이터도 없고 이전 데이터도 없습니다. 기본값 사용.');
+        }
+      }
+
+      // 2. SleepInfo 데이터를 업데이트
+      for (int i = 0; i <= duration; i++) {
+        final currentDate = startDate.add(Duration(days: i+1));
+        final today = currentDate.toIso8601String().split('T')[0];
+
+        final GoalData = await userService.fetchGoal(date: today);
+
+        if (GoalData != null) {
+          // SleepInfo에 Goal 데이터를 저장
+          final targetHours = GoalData['targetHours'] as int?;
+          final targetSleepTime = GoalData['targetSleepTime'] as String?;
+
+          if (targetHours != null && targetSleepTime != null) {
+            await userService.saveSleepInfo(
+              date: today,
+              targetHours: targetHours,
+              targetSleepTime: targetSleepTime,
+            );
+            print('$today: SleepInfo 업데이트 완료.');
+          } else {
+            print('$today: Goal 데이터가 불완전하여 SleepInfo를 업데이트하지 못했습니다.');
+          }
+        } else {
+          print('$today: Goal 데이터가 없어 SleepInfo를 업데이트하지 못했습니다.');
+        }
+      }
+
+      print('Goal 및 SleepInfo 업데이트 완료!');
+    } catch (e) {
+      print('Error updating sleep goals and info: $e');
+    }
+  }
+
+  Map<String, int> parseTime(String timeString) {
+    final timeRegex = RegExp(r'(오전|오후)\s*(\d{1,2})시\s*(\d{1,2})?분?');
+    final match = timeRegex.firstMatch(timeString);
+
+    if (match == null) {
+      throw FormatException('Invalid time format: $timeString');
+    }
+
+    final period = match.group(1); // '오전' 또는 '오후'
+    final rawHour = int.parse(match.group(2)!); // 시
+    final rawMinute = match.group(3) != null ? int.parse(match.group(3)!) : 0; // 분
+
+    int hour = period == '오후' && rawHour != 12 ? rawHour + 12 : rawHour;
+    hour = period == '오전' && rawHour == 12 ? 0 : hour;
+
+    return {'hour': hour, 'minute': rawMinute};
+  }
+
+
+
+  void updateScore(DateTime startDate, List sleepDataList) async {
+    final userService = UserDataService();
+    int duration = currentTime.difference(startDate).inDays;
+    try {
+      print("Duration (days): $duration");
+      print("SleepData length: ${sleepDataList.length}");
+      if (sleepDataList.length < duration * 4) {
+        print("Insufficient sleep data! Exiting update.");
+        return;
+      }
+
+      for (int i = 0; i < duration; i++) {
+        final currentDate = startDate.add(Duration(days: i+1));
+        final today = currentDate.toIso8601String().split('T')[0];
+
+        var dayIndex = i;
+
+        int rem = (sleepDataList[dayIndex * 4 + 3].value as NumericHealthValue)
+            .numericValue
+            .toInt();
+        int remHour = rem ~/ 60;
+        int remMinute = rem % 60;
+
+        final sleepData = SleepData(
+          bedTime: sleepDataList[dayIndex * 4].dateFrom,
+          wakeTime: sleepDataList[dayIndex * 4].dateTo,
+          deepSleep: Duration(
+              hours:
+              (sleepDataList[dayIndex * 4 + 2].value as NumericHealthValue)
+                  .numericValue
+                  .toInt()), // 깊은 수면
+          remSleep: Duration(hours: remHour, minutes: remMinute), // REM 수면
+        );
+
+        final GoalData = await userService.fetchGoal(date: today);
+        if (GoalData == null) {
+          print("Goal data is missing for $today. Skipping.");
+          continue;
+        }
+
+        // parseTime 호출 후 결과값을 받아옵니다.
+        final timeResult = parseTime(GoalData['targetSleepTime']);
+        int sleepHour = timeResult['hour']!;
+        int sleepMinute = timeResult['minute']!;
+
+        final preferredBedTime = DateTime(
+            currentDate.year, currentDate.month, currentDate.day - 1, sleepHour, sleepMinute);
+        final preferredSleepTime = Duration(hours: GoalData['targetHours']);
+        final preferredWakeTime = preferredBedTime.add(preferredSleepTime);
+
+        print('목표 -> 취침시간: $preferredBedTime, 기상시간: $preferredWakeTime, 총 수면시간: $preferredSleepTime');
+
+        final sleepAnalyzer = SleepAnalyzer(
+          preferredBedTime: preferredBedTime,
+          preferredSleepTime: preferredSleepTime,
+          preferredWakeTime: preferredWakeTime,
+        );
+
+        final sleepScore = sleepAnalyzer.calculateSleepScore(sleepData);
+        final qualities = sleepAnalyzer.evaluateSleepQuality(sleepData);
+
+        await userService.saveSleepInfo(
+          date: today,
+          sleepScore: sleepScore,
+          scheduleScore: qualities[0],
+          durationScore: qualities[1],
+          qualityScore: qualities[2],
+        );
+      }
+      print('테스트 수면 점수 저장 성공!');
+    } catch (e) {
+      print('Error saving mock sleep data: $e');
+    }
+  }
+
+  // TODO: mockdata 생성 오류 해결! (range 오류)
+  // TODO: sleepScore 계산 오류 해결! (목표 시간 등은 제대로 받는 거 확인됨)
+
   Future<void> _initialize() async {
     bool isAuthorized = await _sleepDataFetcher.requestPermissions();
 
@@ -191,9 +432,12 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     if (isAuthorized) {
-      final now = DateTime.now();
-      final oneWeekAgo = now.subtract(const Duration(days: 7));
+      final now = currentTime;
+      final oneWeekAgo = now.subtract(const Duration(days: 7)); //days 수정 가능
       final sleepData = await _sleepDataFetcher.fetchSleepData(oneWeekAgo, now);
+      updateSleepData(oneWeekAgo, sleepData);
+      updateGoal(oneWeekAgo);
+      updateScore(oneWeekAgo, sleepData);
 
       setState(() {
         if (sleepData.isEmpty) {

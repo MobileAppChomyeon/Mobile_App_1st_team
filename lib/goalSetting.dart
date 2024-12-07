@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:gradient_borders/gradient_borders.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ntp/ntp.dart';
 import 'userData.dart';
 
 class GoalSetting extends StatefulWidget {
@@ -13,8 +14,25 @@ class GoalSetting extends StatefulWidget {
 }
 
 class _GoalSettingState extends State<GoalSetting> {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final today = DateTime.now().toIso8601String().split('T')[0];
+  String tomorrow = '';
+
+  // 날짜를 비동기적으로 가져오고, 목표 수면 정보를 로드
+  Future<void> getCurrentDate() async {
+    DateTime currentTime = await NTP.now();
+    final userService = UserDataService();
+    currentTime = currentTime.toUtc().add(Duration(hours: 9));
+    tomorrow = currentTime.toIso8601String().split('T')[0]; // 현재 날짜 기준 내일 날짜 설정
+
+    final sleepInfo = await userService.fetchSleepInfo(date: tomorrow);
+    if (sleepInfo?['deepSleep'] != null) { // 데이터가 있으면 내일 sleepgoal
+      currentTime = currentTime.toUtc().add(Duration(hours: 9));
+      tomorrow = currentTime.toIso8601String().split('T')[0];
+    }
+    print(tomorrow);
+
+    // 내일 날짜가 설정된 후 sleep goal을 불러옵니다.
+    loadSleepGoal();
+  }
 
   int targetHours = 8;
   String targetSleepTime = '오후 11시';
@@ -26,7 +44,7 @@ class _GoalSettingState extends State<GoalSetting> {
   @override
   void initState() {
     super.initState();
-    loadSleepGoal(); // 맨 처음 한 번만 로드
+    getCurrentDate(); // getCurrentDate를 호출하여 날짜를 가져오고, loadSleepGoal()을 실행
   }
 
   void formatTime(TimeOfDay time) {
@@ -79,22 +97,14 @@ class _GoalSettingState extends State<GoalSetting> {
     });
 
     try {
-      // 특정 날짜의 수면 정보 가져오기
-      final sleepInfo = await userService.fetchSleepInfo(date: today);
-      print(today);
-      if (sleepInfo != null) {
-        final sleepGoal = sleepInfo['sleepGoal'] as Map<String, dynamic>?;
-
-        if (sleepGoal != null) {
-          if (mounted) {
-            setState(() {
-              targetHours = sleepGoal['targetHours'] ?? targetHours; // 기본값 유지
-              targetSleepTime =
-                  sleepGoal['targetSleepTime'] ?? targetSleepTime; // 기본값 유지
-            });
-          }
-
-          print('Loaded Sleep Goal: $targetHours hours, $targetSleepTime');
+      final goalInfo = await userService.fetchGoal(date: tomorrow);
+      print(tomorrow);
+      if (goalInfo != null) {
+        if (mounted) {
+          setState(() {
+            targetHours = goalInfo['targetHours'] ?? targetHours; // 기본값 유지
+            targetSleepTime = goalInfo['targetSleepTime'] ?? targetSleepTime; // 기본값 유지
+          });
         } else {
           print('No sleepGoal data found for the given date.');
         }
@@ -114,16 +124,14 @@ class _GoalSettingState extends State<GoalSetting> {
     final userService = UserDataService();
 
     try {
-      // 수면 목표만 포함된 데이터 생성
-      final sleepGoalData = {
-        'sleepGoal': {
-          'targetHours': hour,
-          'targetSleepTime': time,
-        },
-      };
-
-      // `saveSleepInfo` 호출
       await userService.saveSleepInfo(
+        date: tomorrow,
+        targetHours: hour,
+        targetSleepTime: time,
+      );
+
+      await userService.saveGoal(
+        date: tomorrow,
         targetHours: hour,
         targetSleepTime: time,
       );
@@ -218,15 +226,22 @@ class _GoalSettingState extends State<GoalSetting> {
                                 alignment: Alignment.centerRight,
                               ),
                               onPressed: () async {
+                                ScaffoldMessenger.of(context).clearSnackBars(); // Snackbar 제거
                                 TimeOfDay? pickedTime = await showTimePicker(
                                   context: context,
                                   initialTime: TimeOfDay.now(),
-                                  initialEntryMode: TimePickerEntryMode.input,
+                                  initialEntryMode: TimePickerEntryMode.dial, // Dial UI 사용
+                                  builder: (BuildContext context, Widget? child) {
+                                    return MediaQuery(
+                                      data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+                                      child: child!,
+                                    );
+                                  },
                                 );
 
                                 if (pickedTime != null) {
                                   setState(() {
-                                    formatTime(pickedTime);
+                                    formatTime(pickedTime); // 시간 포맷팅
                                   });
                                 }
                               },
