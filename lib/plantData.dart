@@ -155,7 +155,7 @@ class PlantService {
           'imageUrl': plant['imageUrl'],
         });
 
-        print('${plant['species']} added to encyclopedia.');
+        // print('${plant['species']} added to encyclopedia.');
       }
 
     } catch (e) {
