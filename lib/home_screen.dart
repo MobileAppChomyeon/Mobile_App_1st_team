@@ -51,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? sleepComment;
   final int totalSleepDuration = 300; // 총 경험치
   final int sleepScore = 10; // 오늘 수면 점수
+  String message = '';
 
   DateTime currentTime = DateTime.now();
 
@@ -207,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       for (int i = 0; i < duration; i++) {
-        final currentDate = startDate.add(Duration(days: i+1));
+        final currentDate = startDate.add(Duration(days: i));
         final today = currentDate.toIso8601String().split('T')[0];
         var dayIndex = i;
 
@@ -266,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // 1. Goal 데이터를 채우기
       for (int i = 0; i <= duration; i++) {
-        final currentDate = startDate.add(Duration(days: i+1));
+        final currentDate = startDate.add(Duration(days: i));
         final today = currentDate.toIso8601String().split('T')[0];
 
         // GoalData 가져오기
@@ -287,7 +288,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
           print('$today: Goal 데이터를 이전 데이터로 채웠습니다.');
         } else {
-          print('$today: Goal 데이터도 없고 이전 데이터도 없습니다. 기본값 사용.');
+          print('$today: (check) Goal 데이터도 없고 이전 데이터도 없습니다. 기본값 사용.');
           await userService.saveGoal(
             date: today,
             targetHours: 8,
@@ -298,7 +299,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // 2. SleepInfo 데이터를 업데이트
       for (int i = 0; i <= duration; i++) {
-        final currentDate = startDate.add(Duration(days: i+1));
+        final currentDate = startDate.add(Duration(days: i));
         final today = currentDate.toIso8601String().split('T')[0];
 
         final GoalData = await userService.fetchGoal(date: today);
@@ -316,10 +317,10 @@ class _HomeScreenState extends State<HomeScreen> {
             );
             print('$today: SleepInfo 업데이트 완료.');
           } else {
-            print('$today: Goal 데이터가 불완전하여 SleepInfo를 업데이트하지 못했습니다.');
+            print('(Error) $today: Goal 데이터가 불완전하여 SleepInfo를 업데이트하지 못했습니다.');
           }
         } else {
-          print('$today: Goal 데이터가 없어 SleepInfo를 업데이트하지 못했습니다.');
+          print('(Error) $today: Goal 데이터가 없어 SleepInfo를 업데이트하지 못했습니다.');
         }
       }
 
@@ -352,6 +353,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void updateScore(DateTime startDate, List sleepDataList) async {
     final userService = UserDataService();
     int duration = currentTime.difference(startDate).inDays;
+
+    //Data 못 받았을 경우 에러 메시지
     try {
       print("Duration (days): $duration");
       print("SleepData length: ${sleepDataList.length}");
@@ -360,28 +363,35 @@ class _HomeScreenState extends State<HomeScreen> {
         return;
       }
 
+      // sleepData에 대해서 반복
       for (int i = 0; i < duration; i++) {
-        final currentDate = startDate.add(Duration(days: i+1));
+        final currentDate = startDate.add(Duration(days: i));
         final today = currentDate.toIso8601String().split('T')[0];
 
         var dayIndex = i;
 
+
         int rem = (sleepDataList[dayIndex * 4 + 3].value as NumericHealthValue)
+            .numericValue
+            .toInt();
+        int deep = (sleepDataList[dayIndex * 4 + 2].value as NumericHealthValue)
+            .numericValue
+            .toInt();
+        int light = (sleepDataList[dayIndex * 4 + 1].value as NumericHealthValue)
             .numericValue
             .toInt();
         int remHour = rem ~/ 60;
         int remMinute = rem % 60;
 
+        // calculateSleepScore에 필요한 정보 정리
         final sleepData = SleepData(
           bedTime: sleepDataList[dayIndex * 4].dateFrom,
           wakeTime: sleepDataList[dayIndex * 4].dateTo,
-          deepSleep: Duration(
-              hours:
-              (sleepDataList[dayIndex * 4 + 2].value as NumericHealthValue)
-                  .numericValue
-                  .toInt()), // 깊은 수면
-          remSleep: Duration(hours: remHour, minutes: remMinute), // REM 수면
+          deepSleep: Duration(hours: deep ~/ 60, minutes: deep % 60),
+          lightSleep: Duration(hours: light ~/ 60, minutes: light % 60),
+          remSleep: Duration(hours: rem ~/ 60, minutes: rem % 60), // REM 수면
         );
+
 
         final GoalData = await userService.fetchGoal(date: today);
         if (GoalData == null) {
@@ -410,6 +420,8 @@ class _HomeScreenState extends State<HomeScreen> {
         final sleepScore = sleepAnalyzer.calculateSleepScore(sleepData);
         final qualities = sleepAnalyzer.evaluateSleepQuality(sleepData);
 
+        print("sleepScore = $sleepScore, qualities = $qualities");
+
         await userService.saveSleepInfo(
           date: today,
           sleepScore: sleepScore,
@@ -417,10 +429,31 @@ class _HomeScreenState extends State<HomeScreen> {
           durationScore: qualities[1],
           qualityScore: qualities[2],
         );
+
       }
       print('테스트 수면 점수 저장 성공!');
+      String today = currentTime.toIso8601String().split('T')[0];
+      final SleepInfo = await userService.fetchSleepInfo(date: today);
+      int score = SleepInfo?['sleepScore'] ?? 0;
+      message = getSleepFeedback(score);
     } catch (e) {
       print('Error saving mock sleep data: $e');
+    }
+  }
+
+  String getSleepFeedback(int score) {
+    if (score >= 90) {
+      return "완벽한 수면이에요!\n최고의 컨디션이겠어요. 😊";
+    } else if (score >= 80) {
+      return "잘 주무셨네요!\n상쾌한 하루 되세요. ✨";
+    } else if (score >= 70) {
+      return "괜찮은 수면이었어요.\n조금 더 신경 쓰면 더 좋아질 거예요. 💪";
+    } else if (score >= 60) {
+      return "수면 패턴이 불규칙해요.\n일정한 시간에 자고 일어나보세요. 🌙";
+    } else if (score >= 50) {
+      return "수면의 질이 좋지 않아요.\n취침 전 루틴을 만들어보는 건 어떨까요? 💭";
+    } else {
+      return "수면 관리가 필요해요.\n규칙적인 수면 습관을 만들어보세요. 😴";
     }
   }
 
@@ -448,7 +481,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _sleepDataText = '수면 데이터가 없습니다';
         } else {
           print('수면 데이터: $sleepData'); // 디버깅용 로그
-          _sleepDataText = '11';
+          _sleepDataText = message;
           // sleepData
           // .map((data) =>
           //     '${data.type} ${data.dateFrom.month}/${data.dateFrom.day}${data.dateFrom.hour}:${data.dateFrom.minute} - ${data.dateTo.month}/${data.dateTo.day}${data.dateTo.hour}:${data.dateTo.minute}')

@@ -53,15 +53,27 @@ class _WeeklyState extends State<Weekly> {
     final userService = UserDataService();
     try {
       final sleepInfo = await userService.fetchSleepInfo(date: today);
-      if (sleepInfo != null) {
+      if (sleepInfo?['sleepScore'] == null) {
+        print('No sleep info found for the first given date.');
+        DateTime currentDate = await NTP.now();
+        setState(() {
+          todayDate = currentDate.toUtc().subtract(Duration(hours: 15));
+          today = todayDate.toIso8601String().split('T')[0];
+        });
+        final sleepInfo = await userService.fetchSleepInfo(date: today);
         if (mounted) {
           setState(() {
-            todaySleepScore = sleepInfo['sleepScore'] ?? todaySleepScore;
+            todaySleepScore = sleepInfo?['sleepScore'] ?? todaySleepScore;
             message = getSleepFeedback(todaySleepScore);
           });
         }
       } else {
-        print('No sleep info found for the given date.');
+        if (mounted) {
+          setState(() {
+            todaySleepScore = sleepInfo?['sleepScore'] ?? todaySleepScore;
+            message = getSleepFeedback(todaySleepScore);
+          });
+        }
       }
     } catch (e) {
       print('Error loading sleep goal: $e');
@@ -93,38 +105,21 @@ class _WeeklyState extends State<Weekly> {
 
 
   // TODO: 아오 여기 수정
-  Future<void> loadMockDateAndExperiences() async {
+  Future<void> loadMockDateAndExperiences(DateTime fetchedStartDate) async {
     final userService = UserDataService();
-    DateTime yesterdayDate = DateTime.now();
-    String yesterday = '';
-    DateTime mockTodayDate = DateTime.now();
-    String mockToday = '';
-
-    DateTime currentDate = await NTP.now();
-    setState(() {
-      mockTodayDate = currentDate.toUtc().add(Duration(hours: 9));
-      mockToday = todayDate.toIso8601String().split('T')[0];
-    });
-
     try {
-      final sleepData = await userService.fetchSleepInfo(date: mockToday);
-      while (sleepData == null) {
-        yesterdayDate = todayDate.subtract(Duration(days: 1));
-        yesterday = yesterdayDate.toIso8601String().split('T')[0];
-      }
-      yesterdayDate = yesterdayDate.add(Duration(days:1));
-      List<Map<String, dynamic>> dateExperienceList = await generateDateExperienceList(yesterdayDate);
+      List<Map<String, dynamic>> dateExperienceList =
+      await generateDateExperienceList(fetchedStartDate);
       setState(() {
-        startDate = yesterdayDate;
+        startDate = fetchedStartDate;
         experienceDateList = dateExperienceList;
       });
-      print("startDate = $startDate, List = $experienceDateList");
-      print("Sleep data all loaded");
-
     } catch (e) {
       print('Error loading start date: $e');
     }
   }
+
+
 
   Future<List<Map<String, dynamic>>> generateDateExperienceList(DateTime fetchedStartDate) async {
     final userService = UserDataService();
@@ -200,7 +195,7 @@ class _WeeklyState extends State<Weekly> {
         elevation: 0,
       ),
       body: FutureBuilder(
-        future: loadMockDateAndExperiences(),
+        future: loadMockDateAndExperiences(DateTime.now().subtract(const Duration(days: 7))),
         builder: (context, snapshot) {
           /*if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(

@@ -21,16 +21,16 @@ class _DailyState extends State<Daily> {
   String month = '';
   String day = '';
 
-  String sleepStartTime = '11:00 PM';
-  String wakeupTime = '8:31 AM';
-  int remSleep = 80;
-  int lightSleep = 143;
-  int deepSleep = 59;
+  String sleepStartTime = 'no data';
+  String wakeupTime = 'no data';
+  int remSleep = 0;
+  int lightSleep = 0;
+  int deepSleep = 0;
   int totalSleepDuration = 0;
-  int sleepScore = 60;
-  String durationScore = '';
-  String qualityScore = '';
-  String scheduleScore = '';
+  int sleepScore = 0;
+  String durationScore = 'null';
+  String qualityScore = 'null';
+  String scheduleScore = 'null';
   String message = '';
 
   final FirebaseFirestore _db = FirebaseFirestore.instance;

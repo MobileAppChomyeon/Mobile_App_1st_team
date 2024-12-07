@@ -150,7 +150,7 @@ class SleepDataFetcher {
 
     for (int i = 0; i < days; i++) {
       final currentDate =
-      startDate.subtract(Duration(days: i, minutes: random.nextInt(240)));
+      startDate.subtract(Duration(days: i));
 
       // 총 수면 시간 (240~720분 -> 4시간 ~ 12시간)
       final totalSleepMinutes = 240 + random.nextInt(481); // 최소 240분, 최대 720분

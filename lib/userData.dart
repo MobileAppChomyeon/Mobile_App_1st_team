@@ -177,7 +177,7 @@ class UserDataService {
         return goalDoc.data();
       }
     } catch (e) {
-      print('Error fetching sleep info: $e');
+      print('Error fetching sleep goal: $e');
     }
     return null;
   }
