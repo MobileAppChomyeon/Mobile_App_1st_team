@@ -1,73 +1,83 @@
 import 'package:flutter/material.dart';
 import 'plantNicknameInput.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mobileapp/userData.dart';
+import 'package:intl/intl.dart';
 
 
-class PlantSelectAgain extends StatelessWidget {
+class PlantSelectAgain extends StatefulWidget {
   const PlantSelectAgain({super.key});
 
-  final List<Map<String, String?>> plantData = const [
-    {
-      'nickname': '요미미',
-      'species': '포인세티아',
-      'startDate': '23.10.01',
-      'endDate': null,
-      'silhouetteImage': 'assets/flower/s1.png',
-      'completeImage': 'assets/flower/s1_com.png',
-      'detail':'안녕하세요안ㄴ여항새야ㅑ뇰알ㄴ이라ㅓ니얼냗ㄴ아러나러낭ㄹㅁㄴ댜ㅓ니아ㅣ아ㅓㄹ먀더ㅐㅑㅓㄴ리ㅏㅓ이라ㅓㄴㅁ이ㅏ로냗ㄹ너ㅣㅏ너이',
-    },
-    {
-      'nickname': null,
-      'species': '백일홍',
-      'startDate': null,
-      'endDate': null,
-      'silhouetteImage': 'assets/flower/s1.png',
-      'completeImage': 'assets/flower/s1_com.png',
-      'detail':'dksdldsjdksjflsdkfsldfjsldkfjslkdf',
-    },
-    {
-      'nickname': '붉은 장미',
-      'species': '장미',
-      'startDate': '23.08.01',
-      'endDate': '23.09.12',
-      'silhouetteImage': 'assets/flower/s1.png',
-      'completeImage': 'assets/flower/s1_com.png',
-      'detail':'dksdldsjdksjflsdkfsldfjsldkfjslkdf',
-    },
-    {
-      'nickname': '이쁜 라벤더',
-      'species': '라벤더',
-      'startDate': '23.07.05',
-      'endDate': '23.08.20',
-      'silhouetteImage': 'assets/flower/s1.png',
-      'completeImage': 'assets/flower/s1_com.png',
-      'detail':'dksdldsjdksjflsdkfsldfjsldkfjslkdf',
-    },
-    {
-      'nickname': null,
-      'species': '사루비아',
-      'startDate': null,
-      'endDate': null,
-      'silhouetteImage': 'assets/flower/s1.png',
-      'completeImage': 'assets/flower/s1_com.png',
-      'detail':'dksdldsjdksjflsdkfsldfjsldkfjslkdf',
-    },{
-      'nickname': null,
-      'species': '캘리포니아 포피',
-      'startDate': null,
-      'endDate': null,
-      'silhouetteImage': 'assets/flower/s1.png',
-      'completeImage': 'assets/flower/s1_com.png',
-      'detail':'dksdldsjdksjflsdkfsldfjsldkfjslkdf',
-    },{
-      'nickname': null,
-      'species': '코스모스',
-      'startDate': null,
-      'endDate': null,
-      'silhouetteImage': 'assets/flower/s1.png',
-      'completeImage': 'assets/flower/s1_com.png',
-      'detail':'dksdldsjdksjflsdkfsldfjsldkfjslkdf',
-    },
-  ];
+  @override
+  State<PlantSelectAgain> createState() => _PlantSelectAgainState();
+}
+
+class _PlantSelectAgainState extends State<PlantSelectAgain> {
+  final UserDataService userDataService = UserDataService();
+
+  // final List<Map<String, String?>> plantData = const [
+  //   {
+  //     'nickname': '요미미',
+  //     'species': '포인세티아',
+  //     'startDate': '23.10.01',
+  //     'endDate': null,
+  //     'silhouetteImage': 'assets/flower/s1.png',
+  //     'completeImage': 'assets/flower/s1_com.png',
+  //     'detail':'안녕하세요안ㄴ여항새야ㅑ뇰알ㄴ이라ㅓ니얼냗ㄴ아러나러낭ㄹㅁㄴ댜ㅓ니아ㅣ아ㅓㄹ먀더ㅐㅑㅓㄴ리ㅏㅓ이라ㅓㄴㅁ이ㅏ로냗ㄹ너ㅣㅏ너이',
+  //   },
+  //   {
+  //     'nickname': null,
+  //     'species': '백일홍',
+  //     'startDate': null,
+  //     'endDate': null,
+  //     'silhouetteImage': 'assets/flower/s1.png',
+  //     'completeImage': 'assets/flower/s1_com.png',
+  //     'detail':'dksdldsjdksjflsdkfsldfjsldkfjslkdf',
+  //   },
+  //   {
+  //     'nickname': '붉은 장미',
+  //     'species': '장미',
+  //     'startDate': '23.08.01',
+  //     'endDate': '23.09.12',
+  //     'silhouetteImage': 'assets/flower/s1.png',
+  //     'completeImage': 'assets/flower/s1_com.png',
+  //     'detail':'dksdldsjdksjflsdkfsldfjsldkfjslkdf',
+  //   },
+  //   {
+  //     'nickname': '이쁜 라벤더',
+  //     'species': '라벤더',
+  //     'startDate': '23.07.05',
+  //     'endDate': '23.08.20',
+  //     'silhouetteImage': 'assets/flower/s1.png',
+  //     'completeImage': 'assets/flower/s1_com.png',
+  //     'detail':'dksdldsjdksjflsdkfsldfjsldkfjslkdf',
+  //   },
+  //   {
+  //     'nickname': null,
+  //     'species': '사루비아',
+  //     'startDate': null,
+  //     'endDate': null,
+  //     'silhouetteImage': 'assets/flower/s1.png',
+  //     'completeImage': 'assets/flower/s1_com.png',
+  //     'detail':'dksdldsjdksjflsdkfsldfjsldkfjslkdf',
+  //   },{
+  //     'nickname': null,
+  //     'species': '캘리포니아 포피',
+  //     'startDate': null,
+  //     'endDate': null,
+  //     'silhouetteImage': 'assets/flower/s1.png',
+  //     'completeImage': 'assets/flower/s1_com.png',
+  //     'detail':'dksdldsjdksjflsdkfsldfjsldkfjslkdf',
+  //   },{
+  //     'nickname': null,
+  //     'species': '코스모스',
+  //     'startDate': null,
+  //     'endDate': null,
+  //     'silhouetteImage': 'assets/flower/s1.png',
+  //     'completeImage': 'assets/flower/s1_com.png',
+  //     'detail':'dksdldsjdksjflsdkfsldfjsldkfjslkdf',
+  //   },
+  // ];
 
   @override
   Widget build(BuildContext context) {
@@ -86,26 +96,45 @@ class PlantSelectAgain extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(15.0),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 15,
-          mainAxisSpacing: 15,
-        ),
-        itemCount: plantData.length,
-        itemBuilder: (context, index) {
-          final plant = plantData[index];
-          return _buildPlantBookCard(context, plant);
-        },
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+          future: userDataService.fetchPlantEncyclopedia(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (snapshot.hasError) {
+              return Center(child: Text('오류 발생: ${snapshot.error}'));
+            }
+
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('식물 데이터가 없습니다.'));
+            }
+
+            final plantData = snapshot.data!;
+
+            return GridView.builder(
+              padding: const EdgeInsets.all(15.0),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 15,
+                mainAxisSpacing: 15,
+              ),
+              itemCount: plantData.length,
+              itemBuilder: (context, index) {
+                final plant = plantData[index];
+                return _buildPlantBookCard(context, plant);
+              },
+            );
+          }
       ),
     );
   }
 
-  Widget _buildPlantBookCard(BuildContext context, Map<String, String?> plant) {
+  Widget _buildPlantBookCard(BuildContext context, Map<String, dynamic> plant) {
     final isCompleted = plant['endDate'] != null;
     final imagePath =
-    isCompleted ? plant['completeImage']! : plant['silhouetteImage']!;
+    isCompleted ? plant['imageUrl']! : plant['silhouetteImage']!;
 
     return GestureDetector(
       onTap: () {
@@ -140,7 +169,7 @@ class PlantSelectAgain extends StatelessWidget {
                   children: [
                     // 아래 텍스트: 테두리 역할
                     Text(
-                      plant['endDate']!,
+                      DateFormat('yyyy.MM.dd').format((plant['endDate'] as Timestamp).toDate()),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,
@@ -152,7 +181,7 @@ class PlantSelectAgain extends StatelessWidget {
                     ),
                     // 위 텍스트: 실제 텍스트
                     Text(
-                      plant['endDate']!,
+                      DateFormat('yyyy.MM.dd').format((plant['endDate'] as Timestamp).toDate()),
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,
@@ -179,13 +208,16 @@ class PlantSelectAgain extends StatelessWidget {
     );
   }
 
-  void _showPlantSelectDetail(BuildContext context, Map<String, String?> plant) {
+  void _showPlantSelectDetail(BuildContext context, Map<String, dynamic> plant) {
     final isCompleted = plant['endDate'] != null;
+    final plantId = plant['plantId'];
+    print(plantId);
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return Dialog(
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -198,11 +230,12 @@ class PlantSelectAgain extends StatelessWidget {
                   width: 140,
                   height: 140,
                   decoration: BoxDecoration(
+                    // color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     image: DecorationImage(
                       image: AssetImage(
                         isCompleted
-                            ? plant['completeImage']!
+                            ? plant['imageUrl']!
                             : plant['silhouetteImage']!,
                       ),
                       fit: BoxFit.cover,
@@ -223,14 +256,14 @@ class PlantSelectAgain extends StatelessWidget {
                   if (plant['startDate'] != null) ...[
                     const SizedBox(height: 8),
                     Text(
-                      '만난 날짜: ${plant['startDate']}',
+                      '만난 날짜: ${DateFormat('yyyy.MM.dd').format((plant['startDate'] as Timestamp).toDate())}',
                       style: const TextStyle(fontSize: 16),
                     ),
                   ],
                   if (plant['endDate'] != null)...[
                     const SizedBox(height: 8),
                     Text(
-                      '다 키운 날짜: ${plant['endDate']}',
+                      '다 키운 날짜: ${DateFormat('yyyy.MM.dd').format((plant['endDate'] as Timestamp).toDate())}',
                       style: const TextStyle(fontSize: 16),
                     ),
                   ],
@@ -259,7 +292,7 @@ class PlantSelectAgain extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    plant['detail'] ?? '이 식물에 대한 설명이 없습니다.',
+                    plant['description'] ?? '이 식물에 대한 설명이 없습니다.',
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 15),
                   ),
@@ -296,7 +329,7 @@ class PlantSelectAgain extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => PlantNicknameInputPage(),
+                              builder: (context) => PlantNicknameInputPage(plantId: plantId),
                             ),
                           );
                         },

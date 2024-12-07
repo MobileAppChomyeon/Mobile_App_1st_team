@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ntp/ntp.dart';
 import 'daySleepData.dart';
 import 'package:intl/intl.dart';
+import 'userData.dart';
+import 'sleep_analyzer.dart';
 
 class Weekly extends StatefulWidget {
   const Weekly({super.key});
@@ -25,28 +30,160 @@ class Weekly extends StatefulWidget {
 
 class _WeeklyState extends State<Weekly> {
 
-  int experinecePoints = 60;
-  String message = '어느 정도 주무셨군요!\n오늘은 조금 더 일찍 잠 들어 보세요';
+  int todaySleepScore = 0;
+  String message = '';
+  DateTime? startDate;
+  List<Map<String, dynamic>> experienceDateList = []; // 날짜와 경험치 리스트
+  DateTime todayDate = DateTime.now();
+  String today = '';
 
-  // 주어진 시작 날짜를 입력받아 오늘까지의 날짜 목록을 생성하는 함수
-  List<DateTime> generateDateList(DateTime startDate) {
-    List<DateTime> dateList = [];
-    DateTime currentDate = startDate;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  bool isLoading = true;
 
-    while (!currentDate.isAfter(DateTime.now())) {
-      dateList.add(currentDate);
-      currentDate = currentDate.add(Duration(days: 1)); // 하루씩 추가
+  void getCurrentTime() async {
+    DateTime currentDate = await NTP.now();
+    setState(() {
+      todayDate = currentDate.toUtc().add(Duration(hours: 9));
+      today = todayDate.toIso8601String().split('T')[0];
+    });
+  }
+
+  void loadTodaySleepData() async {
+    getCurrentTime();
+    final userService = UserDataService();
+    try {
+      final sleepInfo = await userService.fetchSleepInfo(date: today);
+      if (sleepInfo != null) {
+        if (mounted) {
+          setState(() {
+            todaySleepScore = sleepInfo['sleepScore'] ?? todaySleepScore;
+            message = getSleepFeedback(todaySleepScore);
+          });
+        }
+      } else {
+        print('No sleep info found for the given date.');
+      }
+    } catch (e) {
+      print('Error loading sleep goal: $e');
+    }
+  }
+
+  Future<void> loadStartDateAndExperiences() async {
+    final userService = UserDataService();
+    try {
+      // StartDate 가져오기
+      final dateInfo = await userService.fetchCurrentPlantInfo();
+      if (dateInfo != null) {
+        DateTime? fetchedStartDate = (dateInfo['startDate'] as Timestamp).toDate();
+        if (fetchedStartDate != null) {
+          List<Map<String, dynamic>> dateExperienceList =
+          await generateDateExperienceList(fetchedStartDate);
+          setState(() {
+            startDate = fetchedStartDate;
+            experienceDateList = dateExperienceList;
+          });
+        }
+      } else {
+        print('No start date found.');
+      }
+    } catch (e) {
+      print('Error loading start date: $e');
+    }
+  }
+
+
+  // TODO: 아오 여기 수정
+  Future<void> loadMockDateAndExperiences() async {
+    final userService = UserDataService();
+    DateTime yesterdayDate = DateTime.now();
+    String yesterday = '';
+    DateTime mockTodayDate = DateTime.now();
+    String mockToday = '';
+
+    DateTime currentDate = await NTP.now();
+    setState(() {
+      mockTodayDate = currentDate.toUtc().add(Duration(hours: 9));
+      mockToday = todayDate.toIso8601String().split('T')[0];
+    });
+
+    try {
+      final sleepData = await userService.fetchSleepInfo(date: mockToday);
+      while (sleepData == null) {
+        yesterdayDate = todayDate.subtract(Duration(days: 1));
+        yesterday = yesterdayDate.toIso8601String().split('T')[0];
+      }
+      yesterdayDate = yesterdayDate.add(Duration(days:1));
+      List<Map<String, dynamic>> dateExperienceList = await generateDateExperienceList(yesterdayDate);
+      setState(() {
+        startDate = yesterdayDate;
+        experienceDateList = dateExperienceList;
+      });
+      print("startDate = $startDate, List = $experienceDateList");
+      print("Sleep data all loaded");
+
+    } catch (e) {
+      print('Error loading start date: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> generateDateExperienceList(DateTime fetchedStartDate) async {
+    final userService = UserDataService();
+    List<Map<String, dynamic>> dateSleepScoreList = [];
+    DateTime currentDate = fetchedStartDate;
+
+    while (!currentDate.isAfter(todayDate)) {
+      String formattedDate = DateFormat('yyyy-MM-dd').format(currentDate);
+      try {
+        final sleepInfo = await userService.fetchSleepInfo(date: formattedDate);
+        int sleepScore = sleepInfo?['sleepScore'] ?? 0;
+
+        dateSleepScoreList.add({
+          'date': formattedDate,
+          'experience': sleepScore, // 'experience' 키로 저장
+        });
+      } catch (e) {
+        print('Error fetching sleepScore for $formattedDate: $e');
+        dateSleepScoreList.add({
+          'date': formattedDate,
+          'experience': 0, // 오류 발생 시 기본값 0
+        });
+      }
+      currentDate = currentDate.add(const Duration(days: 1));
     }
 
-    return dateList.reversed.toList();
+    dateSleepScoreList.sort((a, b) =>
+        DateTime.parse(b['date']).compareTo(DateTime.parse(a['date'])));
+
+    return dateSleepScoreList;
+  }
+
+  String getSleepFeedback(int score) {
+    if (score >= 90) {
+      return "완벽한 수면이에요!\n최고의 컨디션이겠어요. 😊";
+    } else if (score >= 80) {
+      return "잘 주무셨네요!\n상쾌한 하루 되세요. ✨";
+    } else if (score >= 70) {
+      return "괜찮은 수면이었어요.\n조금 더 신경 쓰면 더 좋아질 거예요. 💪";
+    } else if (score >= 60) {
+      return "수면 패턴이 불규칙해요.\n일정한 시간에 자고 일어나보세요. 🌙";
+    } else if (score >= 50) {
+      return "수면의 질이 좋지 않아요.\n취침 전 루틴을 만들어보는 건 어떨까요? 💭";
+    } else {
+      return "수면 관리가 필요해요.\n규칙적인 수면 습관을 만들어보세요. 😴";
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadTodaySleepData();
   }
 
   @override
   Widget build(BuildContext context) {
 
     final Size size = MediaQuery.of(context).size;
-    DateTime startDate = DateTime(2024, 10, 31);
-    List<DateTime> dateList = generateDateList(startDate);
+    loadTodaySleepData();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -62,104 +199,120 @@ class _WeeklyState extends State<Weekly> {
         centerTitle: true,
         elevation: 0,
       ),
-      body: Padding(
-        padding: EdgeInsets.fromLTRB(size.width * 0.08, size.height * 0.04, size.width * 0.08, size.height * 0.04),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("오늘의 수면 경험치",
-                style: TextStyle(fontWeight: FontWeight.normal, fontSize: 19)
-            ),
-            SizedBox(
-                height: size.height * 0.02
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) {
-                      return Daily(
-                        chosen: DateTime.now(),
-                      );
-                    }));
-              },
-              child: Container(
-                width: size.width * 0.84,
-                height: size.height * 0.15,
-                child: Row(
-                  children: [
-                    SizedBox(
-                        width:35
-                    ),
-                    Text('${experinecePoints}', style:
-                    TextStyle(fontWeight: FontWeight.w500,fontSize: 40),
-                      textAlign: TextAlign.right,),
-                    SizedBox(
-                        width:20
-                    ),
-                    Text('${message}',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                      textAlign: TextAlign.left,
-                    ),
-                    SizedBox(
-                        width: size.width * 0.04
-                    ),
-                    Icon(Icons.chevron_right, size: 14),
-                  ],
-                ),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      Color(0xffA3BFD9),
-                      Color(0xffC1E1C1),
+      body: FutureBuilder(
+        future: loadMockDateAndExperiences(),
+        builder: (context, snapshot) {
+          /*if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+                child: CircularProgressIndicator()
+                );
+          }
+
+          if (snapshot.hasError) {
+            return Text('에러: ${snapshot.error}');
+          }
+
+          if (snapshot.hasData) {
+            return Text("데이터 로드 완료");
+          }*/
+        return Padding(
+          padding: EdgeInsets.fromLTRB(size.width * 0.08, size.height * 0.04, size.width * 0.08, size.height * 0.04),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("오늘의 수면 경험치",
+                  style: TextStyle(fontWeight: FontWeight.normal, fontSize: 19)
+              ),
+              SizedBox(
+                  height: size.height * 0.02
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) {
+                        return Daily(
+                          chosen: today,
+                        );
+                      }));
+                },
+                child: Container(
+                  width: size.width * 0.84,
+                  height: size.height * 0.15,
+                  child: Row(
+                    children: [
+                      SizedBox(
+                          width:35
+                      ),
+                      Text('${todaySleepScore}', style:
+                      TextStyle(fontWeight: FontWeight.w500,fontSize: 40),
+                        textAlign: TextAlign.right,),
+                      SizedBox(
+                          width:20
+                      ),
+                      Text('${message}',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        textAlign: TextAlign.left,
+                      ),
+                      SizedBox(
+                          width: size.width * 0.04
+                      ),
+                      Icon(Icons.chevron_right, size: 14),
                     ],
                   ),
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        Color(0xffA3BFD9),
+                        Color(0xffC1E1C1),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
                 ),
               ),
-            ),
-            SizedBox(
-              height: 60,
-            ),
-            Text("지난날의 수면 경험치들",
-                style: TextStyle(fontWeight: FontWeight.normal, fontSize: 19)
-            ),
-            SizedBox(
-              height: size.height * 0.02,
-            ),
-            Container(
-              width: size.width * 0.84,
-              height: size.height * 0.35,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(10)),
-                color: Color(0xffA3BFD9).withOpacity(0.2),
+              SizedBox(
+                height: 60,
               ),
-              padding: EdgeInsets.fromLTRB(size.width * 0.06, size.height * 0.02, size.width * 0.06, size.height * 0.02),
-              child: ListView.builder(
-                itemCount: dateList.length,
-                itemBuilder: (context, index) {
-                  DateTime date = dateList[index];
-                  String formattedDate = DateFormat('yyyy/MM/dd').format(date); // 날짜 형식 설정
+              Text("지난날의 수면 경험치들",
+                  style: TextStyle(fontWeight: FontWeight.normal, fontSize: 19)
+              ),
+              SizedBox(
+                height: size.height * 0.02,
+              ),
+              Container(
+                width: size.width * 0.84,
+                height: size.height * 0.35,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                  color: Color(0xffA3BFD9).withOpacity(0.2),
+                ),
+                padding: EdgeInsets.fromLTRB(size.width * 0.06, size.height * 0.02, size.width * 0.06, size.height * 0.02),
+                child: ListView.builder(
+                  itemCount: experienceDateList.length,
+                  itemBuilder: (context, index) {
+                    final item = experienceDateList[index];
 
-                  return ListTile(
-                    title: Text('${formattedDate}: ${experinecePoints} 경험치',
-                        style: Theme.of(context).textTheme.bodyMedium),
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                            return Daily(
-                              chosen: date,
-                            );
-                          }));
-                    },
-                    trailing: Icon(Icons.chevron_right, size: 16),
-                  );
-                },
+                    return ListTile(
+                      title: Text('${item['date']}: ${item['experience']} 경험치',
+                          style: Theme.of(context).textTheme.bodyMedium),
+                      onTap: () {
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) {
+                              return Daily(
+                                chosen: item['date'],
+                              );
+                            }));
+                      },
+                      trailing: Icon(Icons.chevron_right, size: 16),
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        );},
       ),
     );
   }

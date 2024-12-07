@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobileapp/home_screen.dart';
 import 'home_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class BackgroundSelectPage extends StatefulWidget {
   final String plantNickname;
@@ -29,6 +31,60 @@ class _BackgroundSelectPageState extends State<BackgroundSelectPage> {
       'title': '고요하고 반짝이는 밤',
     },
   ];
+
+  Future<void> _saveBackgroundToFirestore(String backgroundImage) async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("로그인이 필요합니다.")),
+      );
+      return;
+    }
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.uid)
+          .collection('Plants')
+          .doc('currentPlant')
+          .update({'backgroundImage': backgroundImage});
+
+      print('배경 이미지 저장 완료: $backgroundImage');
+    } catch (e) {
+      print('배경 이미지 저장 실패: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("배경 이미지 저장 실패: $e")),
+      );
+    }
+  }
+
+  /// 경험치 초기화 함수
+  Future<void> _initializeExperience() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('User not logged in');
+      return;
+    }
+
+    try {
+      final experienceRef = FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.uid)
+          .collection('Experience')
+          .doc('currentExperience');
+
+      // 초기값 설정
+      await experienceRef.set({
+        'date': DateTime.now().toIso8601String().split('T')[0], // YYYY-MM-DD 형식
+        'totalScore': 0, // 누적 경험치
+        'todayScore': 0, // 오늘 점수
+      });
+      print('Experience initialized successfully.');
+    } catch (e) {
+      print('Error initializing experience: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +119,8 @@ class _BackgroundSelectPageState extends State<BackgroundSelectPage> {
                 children: [
                   // 배경 이미지
                   Container(
-                    margin: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
+                    margin:
+                        const EdgeInsets.only(left: 12, right: 12, bottom: 12),
                     decoration: BoxDecoration(
                       color: Colors.grey[300],
                       borderRadius: BorderRadius.circular(10),
@@ -80,8 +137,6 @@ class _BackgroundSelectPageState extends State<BackgroundSelectPage> {
                   ),
 
                   // 이미지 제목
-
-
                 ],
               );
             },
@@ -109,11 +164,11 @@ class _BackgroundSelectPageState extends State<BackgroundSelectPage> {
             child: IconButton(
               onPressed: _currentPage > 0
                   ? () {
-                _pageController.previousPage(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-              }
+                      _pageController.previousPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    }
                   : null,
               icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
             ),
@@ -125,11 +180,11 @@ class _BackgroundSelectPageState extends State<BackgroundSelectPage> {
             child: IconButton(
               onPressed: _currentPage < _backgroundData.length - 1
                   ? () {
-                _pageController.nextPage(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-              }
+                      _pageController.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    }
                   : null,
               icon: const Icon(Icons.arrow_forward_ios, color: Colors.black),
             ),
@@ -155,22 +210,33 @@ class _BackgroundSelectPageState extends State<BackgroundSelectPage> {
             right: 50,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4A6FA5),
+                backgroundColor: const Color(0xFFB4C7E7),
                 minimumSize: const Size(320, 60),
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                textStyle: const TextStyle(fontSize: 18,),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                textStyle: const TextStyle(
+                  fontSize: 18,
+                ),
               ),
-              onPressed: () {
+              onPressed: () async {
                 final selectedBackground = _backgroundData[_currentPage];
-                print('선택된 배경: ${selectedBackground['title']}');
-                Navigator.pop(context, selectedBackground);
-                Navigator.push(context,
-                MaterialPageRoute(builder: (context) => HomeScreen()));
+                final backgroundImage = selectedBackground['image']!;
+
+                // Firestore에 저장
+                await _saveBackgroundToFirestore(backgroundImage);
+                await _initializeExperience();
+
+                // HomeScreen으로 이동
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomeScreen()),
+                );
               },
               child: const Text(
                 '선택하기',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.black),
               ),
             ),
           ),

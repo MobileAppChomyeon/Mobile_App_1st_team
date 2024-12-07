@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:health/health.dart';
 import 'package:mobileapp/plantSelect.dart';
+import 'package:ntp/ntp.dart';
 import 'plantBook.dart';
 import 'goalSetting.dart';
 import 'weeklySleepData.dart';
 import 'plantSelectAgain.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mobileapp/userData.dart';
+import 'package:mobileapp/sleep_analyzer.dart';
+import 'sleepdata_fetcher.dart';
 
 // void main() {
 //   runApp(const Directionality(
 //       textDirection: TextDirection.ltr, child: HomeScreen()));
 // }
-import 'sleepdata_fetcher.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -35,25 +41,36 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final SleepDataFetcher _sleepDataFetcher = SleepDataFetcher();
+  final UserDataService dataService = UserDataService();
+  Map<String, dynamic>? currentPlantData;
   bool _isAuthorized = false;
   String _sleepDataText = '데이터 로딩 중...';
-
   String? backgroundImage;
   String? plantImage;
   String? plantName = '무리무리';
   String? sleepComment;
-  final int totalSleepDuration = 8; // 총 경험치
+  int totalSleepDuration = 0; // 총 경험치
   final int sleepScore = 10; // 오늘 수면 점수
+
+  DateTime currentTime = DateTime.now();
+
+  void getCurrentTime() async {
+    DateTime today = await NTP.now();
+    setState(() {
+      currentTime = today.toUtc().add(Duration(hours: 9));
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    backgroundImage = 'assets/background/morning.png';
-    plantImage = 'assets/flower/daisy/daisy4.png';
     sleepComment = "어느정도 주무셨군요!\n오늘은 조금 더 일찍 잠에 들어 보세요";
+    getCurrentTime();
     _initialize();
+    _initializePlant();
+    updateExperience(sleepScore);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && totalSleepDuration >= 1.0) {
+      if (mounted && totalSleepDuration >= 100) {
         // 경험치 최대치되면!!
         _showPlantPopup();
       }
@@ -61,13 +78,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showPlantPopup() {
-    DateTime now = DateTime.now();
+    DateTime now = currentTime;
     int daysTaken = 30; // now.difference(startDate).inDays; // 걸린 날짜 계산
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.0),
           ),
@@ -75,11 +93,13 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               // 식물 이미지
-              Image.asset(
-                plantImage!,
-                width: 100,
-                height: 100,
-              ),
+              plantImage != null
+                  ? Image.asset(
+                      plantImage!,
+                      width: 100,
+                      height: 100,
+                    )
+                  : Center(child: CircularProgressIndicator()),
               const SizedBox(height: 20),
               // 메시지
               Text(
@@ -123,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ); // 다른 화면으로 이동
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4A6FA5), // 버튼 색상
+                  backgroundColor: const Color(0xFFB4C7E7), // 버튼 색상
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -133,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(
                     fontFamily: "Pretendard",
                     fontSize: 14,
-                    color: Colors.white,
+                    color: Colors.black,
                   ),
                 ),
               ),
@@ -144,17 +164,285 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _initializePlant() async {
+    currentPlantData = await dataService.fetchCurrentPlantInfo();
+    print("지금 키우는 식물 데이터");
+    print(currentPlantData);
+
+    if (currentPlantData != null) {
+      String plantId = currentPlantData!['plantId'];
+      String imageUrl = '';
+      if (totalSleepDuration < 100) {
+        imageUrl = 'assets/flower/$plantId/${plantId}1.png';
+        dataService.savePlantInfo(growthStage: 1, imageUrl: imageUrl);
+      } else if (totalSleepDuration < 300) {
+        imageUrl = 'assets/flower/$plantId/${plantId}2.png';
+        dataService.savePlantInfo(growthStage: 2, imageUrl: imageUrl);
+      } else if (totalSleepDuration < 500) {
+        imageUrl = 'assets/flower/$plantId/${plantId}3.png';
+        dataService.savePlantInfo(growthStage: 3, imageUrl: imageUrl);
+      } else {
+        imageUrl = 'assets/flower/$plantId/${plantId}4.png';
+        dataService.savePlantInfo(growthStage: 4, imageUrl: imageUrl);
+      }
+      plantName = currentPlantData!['nickname'];
+      backgroundImage = currentPlantData!['backgroundImage'];
+      plantImage = imageUrl;
+    } else {
+      plantName = '이름이 없어요';
+      backgroundImage = 'assets/background/morning.png';
+      plantImage = 'assets/flower/daisy/daisy4.png';
+    }
+  }
+
+  void updateSleepData(DateTime startDate, List mockData) async {
+    final userService = UserDataService();
+    int duration = currentTime.difference(startDate).inDays;
+
+    try {
+      print("Duration (days): $duration");
+      print("MockData length: ${mockData.length}");
+      if (mockData.length < duration * 4) {
+        print("Insufficient mock data! Exiting update.");
+        return;
+      }
+
+      for (int i = 0; i < duration; i++) {
+        final currentDate = startDate.add(Duration(days: i+1));
+        final today = currentDate.toIso8601String().split('T')[0];
+        var dayIndex = i;
+
+        try {
+          final rem = (mockData[dayIndex * 4 + 3].value as NumericHealthValue)
+              .numericValue
+              .toInt();
+          final light = (mockData[dayIndex * 4 + 1].value as NumericHealthValue)
+              .numericValue
+              .toInt();
+          final deep = (mockData[dayIndex * 4 + 2].value as NumericHealthValue)
+              .numericValue
+              .toInt();
+          final total = (mockData[dayIndex * 4].value as NumericHealthValue)
+              .numericValue
+              .toInt();
+
+          print("Saving data for day $dayIndex:");
+          print("Sleep Start: ${mockData[dayIndex * 4].dateFrom}");
+          print("Wake Up: ${mockData[dayIndex * 4].dateTo}");
+          print("REM Sleep: $rem");
+          print("Light Sleep: $light");
+          print("Deep Sleep: $deep");
+          print("Total Sleep Duration: $total");
+
+          // Firestore 저장
+          await userService.saveSleepInfo(
+            date: today,
+            sleepStartTime:
+                mockData[dayIndex * 4].dateFrom.toIso8601String().split('T')[1],
+            wakeUpTime:
+                mockData[dayIndex * 4].dateTo.toIso8601String().split('T')[1],
+            remSleep: rem,
+            lightSleep: light,
+            deepSleep: deep,
+            totalSleepDuration: total,
+            targetHours: 8,
+            targetSleepTime: '오후 11시',
+          );
+        } catch (e) {
+          print("Error processing data for day $dayIndex: $e");
+        }
+      }
+      print('테스트 수면 데이터 저장 성공!');
+    } catch (e) {
+      print('Error saving mock sleep data: $e');
+    }
+  }
+
+  Future<void> updateGoal(DateTime startDate) async {
+    final userService = UserDataService();
+    int duration = currentTime.difference(startDate).inDays;
+
+    try {
+      Map<String, dynamic>? lastKnownGoal;
+
+      // 1. Goal 데이터를 채우기
+      for (int i = 0; i <= duration; i++) {
+        final currentDate = startDate.add(Duration(days: i+1));
+        final today = currentDate.toIso8601String().split('T')[0];
+
+        // GoalData 가져오기
+        final GoalData = await userService.fetchGoal(date: today);
+
+        if (GoalData != null) {
+          // Goal 데이터가 존재하면 최신 데이터로 갱신
+          lastKnownGoal = {
+            'targetHours': GoalData['targetHours'] as int,
+            'targetSleepTime': GoalData['targetSleepTime'] as String,
+          };
+        } else if (lastKnownGoal != null) {
+          // Goal 데이터가 없고 마지막으로 알려진 Goal 데이터가 있으면 저장
+          await userService.saveGoal(
+            date: today,
+            targetHours: lastKnownGoal['targetHours'] as int,
+            targetSleepTime: lastKnownGoal['targetSleepTime'] as String,
+          );
+          print('$today: Goal 데이터를 이전 데이터로 채웠습니다.');
+        } else {
+          print('$today: Goal 데이터도 없고 이전 데이터도 없습니다. 기본값 사용.');
+          await userService.saveGoal(
+            date: today,
+            targetHours: 8,
+            targetSleepTime: '오후 11시',
+          );
+        }
+      }
+
+      // 2. SleepInfo 데이터를 업데이트
+      for (int i = 0; i <= duration; i++) {
+        final currentDate = startDate.add(Duration(days: i+1));
+        final today = currentDate.toIso8601String().split('T')[0];
+
+        final GoalData = await userService.fetchGoal(date: today);
+
+        if (GoalData != null) {
+          // SleepInfo에 Goal 데이터를 저장
+          final targetHours = GoalData['targetHours'] as int?;
+          final targetSleepTime = GoalData['targetSleepTime'] as String?;
+
+          if (targetHours != null && targetSleepTime != null) {
+            await userService.saveSleepInfo(
+              date: today,
+              targetHours: targetHours,
+              targetSleepTime: targetSleepTime,
+            );
+            print('$today: SleepInfo 업데이트 완료.');
+          } else {
+            print('$today: Goal 데이터가 불완전하여 SleepInfo를 업데이트하지 못했습니다.');
+          }
+        } else {
+          print('$today: Goal 데이터가 없어 SleepInfo를 업데이트하지 못했습니다.');
+        }
+      }
+
+      print('Goal 및 SleepInfo 업데이트 완료!');
+    } catch (e) {
+      print('Error updating sleep goals and info: $e');
+    }
+  }
+
+  Map<String, int> parseTime(String timeString) {
+    final timeRegex = RegExp(r'(오전|오후)\s*(\d{1,2})시\s*(\d{1,2})?분?');
+    final match = timeRegex.firstMatch(timeString);
+
+    if (match == null) {
+      throw FormatException('Invalid time format: $timeString');
+    }
+
+    final period = match.group(1); // '오전' 또는 '오후'
+    final rawHour = int.parse(match.group(2)!); // 시
+    final rawMinute = match.group(3) != null ? int.parse(match.group(3)!) : 0; // 분
+
+    int hour = period == '오후' && rawHour != 12 ? rawHour + 12 : rawHour;
+    hour = period == '오전' && rawHour == 12 ? 0 : hour;
+
+    return {'hour': hour, 'minute': rawMinute};
+  }
+
+
+
+  void updateScore(DateTime startDate, List sleepDataList) async {
+    final userService = UserDataService();
+    int duration = currentTime.difference(startDate).inDays;
+    try {
+      print("Duration (days): $duration");
+      print("SleepData length: ${sleepDataList.length}");
+      if (sleepDataList.length < duration * 4) {
+        print("Insufficient sleep data! Exiting update.");
+        return;
+      }
+
+      for (int i = 0; i < duration; i++) {
+        final currentDate = startDate.add(Duration(days: i+1));
+        final today = currentDate.toIso8601String().split('T')[0];
+
+        var dayIndex = i;
+
+        int rem = (sleepDataList[dayIndex * 4 + 3].value as NumericHealthValue)
+            .numericValue
+            .toInt();
+        int remHour = rem ~/ 60;
+        int remMinute = rem % 60;
+
+        final sleepData = SleepData(
+          bedTime: sleepDataList[dayIndex * 4].dateFrom,
+          wakeTime: sleepDataList[dayIndex * 4].dateTo,
+          deepSleep: Duration(
+              hours:
+              (sleepDataList[dayIndex * 4 + 2].value as NumericHealthValue)
+                  .numericValue
+                  .toInt()), // 깊은 수면
+          remSleep: Duration(hours: remHour, minutes: remMinute), // REM 수면
+        );
+
+        final GoalData = await userService.fetchGoal(date: today);
+        if (GoalData == null) {
+          print("Goal data is missing for $today. Skipping.");
+          continue;
+        }
+
+        // parseTime 호출 후 결과값을 받아옵니다.
+        final timeResult = parseTime(GoalData['targetSleepTime']);
+        int sleepHour = timeResult['hour']!;
+        int sleepMinute = timeResult['minute']!;
+
+        final preferredBedTime = DateTime(
+            currentDate.year, currentDate.month, currentDate.day - 1, sleepHour, sleepMinute);
+        final preferredSleepTime = Duration(hours: GoalData['targetHours']);
+        final preferredWakeTime = preferredBedTime.add(preferredSleepTime);
+
+        print('목표 -> 취침시간: $preferredBedTime, 기상시간: $preferredWakeTime, 총 수면시간: $preferredSleepTime');
+
+        final sleepAnalyzer = SleepAnalyzer(
+          preferredBedTime: preferredBedTime,
+          preferredSleepTime: preferredSleepTime,
+          preferredWakeTime: preferredWakeTime,
+        );
+
+        final sleepScore = sleepAnalyzer.calculateSleepScore(sleepData);
+        final qualities = sleepAnalyzer.evaluateSleepQuality(sleepData);
+
+        await userService.saveSleepInfo(
+          date: today,
+          sleepScore: sleepScore,
+          scheduleScore: qualities[0],
+          durationScore: qualities[1],
+          qualityScore: qualities[2],
+        );
+      }
+      print('테스트 수면 점수 저장 성공!');
+    } catch (e) {
+      print('Error saving mock sleep data: $e');
+    }
+  }
+
+  // TODO: mockdata 생성 오류 해결! (range 오류)
+  // TODO: sleepScore 계산 오류 해결! (목표 시간 등은 제대로 받는 거 확인됨)
+
   Future<void> _initialize() async {
     bool isAuthorized = await _sleepDataFetcher.requestPermissions();
 
     setState(() {
       _isAuthorized = isAuthorized;
+      dataService.updateMockEncyclopedia();
     });
 
     if (isAuthorized) {
-      final now = DateTime.now();
-      final oneWeekAgo = now.subtract(const Duration(days: 7));
+      final now = currentTime;
+      final oneWeekAgo = now.subtract(const Duration(days: 7)); //days 수정 가능
       final sleepData = await _sleepDataFetcher.fetchSleepData(oneWeekAgo, now);
+      updateSleepData(oneWeekAgo, sleepData);
+      updateGoal(oneWeekAgo);
+      updateScore(oneWeekAgo, sleepData);
 
       setState(() {
         if (sleepData.isEmpty) {
@@ -162,12 +450,60 @@ class _HomeScreenState extends State<HomeScreen> {
         } else {
           print('수면 데이터: $sleepData'); // 디버깅용 로그
           _sleepDataText = '11';
-              // sleepData
-              // .map((data) =>
-              //     '${data.type} ${data.dateFrom.month}/${data.dateFrom.day}${data.dateFrom.hour}:${data.dateFrom.minute} - ${data.dateTo.month}/${data.dateTo.day}${data.dateTo.hour}:${data.dateTo.minute}')
-              // .join('\n');
+          // sleepData
+          // .map((data) =>
+          //     '${data.type} ${data.dateFrom.month}/${data.dateFrom.day}${data.dateFrom.hour}:${data.dateFrom.minute} - ${data.dateTo.month}/${data.dateTo.day}${data.dateTo.hour}:${data.dateTo.minute}')
+          // .join('\n');
         }
       });
+    }
+  }
+
+  /// 경험치 업데이트 함수
+  Future<void> updateExperience(int todayScore) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('User not logged in');
+      return;
+    }
+
+    try {
+      final experienceRef = FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.uid)
+          .collection('Experience')
+          .doc('currentExperience');
+      final docSnapshot = await experienceRef.get();
+
+      if (!docSnapshot.exists) {
+        print('Experience document does not exist.');
+        return;
+      }
+
+      final data = docSnapshot.data();
+      final lastUpdatedDate = data?['date'] ?? '';
+      final totalScore = data?['totalScore'] ?? 0;
+      totalSleepDuration = totalScore;
+      final todayDate = DateTime.now().toIso8601String().split('T')[0];
+
+      // 날짜 비교
+      if (lastUpdatedDate == todayDate) {
+        print('Experience already updated for today.');
+        return;
+      }
+
+      // 오늘 처음 실행이므로 업데이트
+      final updatedTotalScore = totalScore + todayScore;
+
+      await experienceRef.update({
+        'date': todayDate,
+        'totalScore': updatedTotalScore,
+        'todayScore': todayScore,
+      });
+
+      print('Experience updated successfully.');
+    } catch (e) {
+      print('Error updating experience: $e');
     }
   }
 
@@ -185,10 +521,12 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // 배경 이미지
           Positioned.fill(
-            child: Image.asset(
-              backgroundImage!,
-              fit: BoxFit.cover,
-            ),
+            child: backgroundImage != null
+                ? Image.asset(
+                    backgroundImage!,
+                    fit: BoxFit.cover,
+                  )
+                : Center(child: CircularProgressIndicator()),
           ),
           // Progress Bar
           Align(
@@ -248,10 +586,12 @@ class _HomeScreenState extends State<HomeScreen> {
             right: 0,
             child: SizedBox(
               width: MediaQuery.of(context).size.width, // 화면 가로 크기
-              child: Image.asset(
-                plantImage!,
-                fit: BoxFit.fitWidth, // 가로 크기에 맞춰서 비율 유지
-              ),
+              child: plantImage != null
+                  ? Image.asset(
+                      plantImage!,
+                      fit: BoxFit.fitWidth, // 가로 크기에 맞춰서 비율 유지
+                    )
+                  : Center(child: CircularProgressIndicator()),
             ),
           ),
           Align(
