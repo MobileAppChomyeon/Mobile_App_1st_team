@@ -312,12 +312,12 @@ class UserDataService {
       await encyclopediaRef.doc('other1').update({
         'startDate': Timestamp.fromDate(DateTime(2024, 11, 3)),
         'endDate': Timestamp.fromDate(DateTime(2024, 12, 4)),
-        'nickname': '첫째',
+        'nickname': '둘째',
       });
       await encyclopediaRef.doc('other3').update({
         'startDate': Timestamp.fromDate(DateTime(2024, 10, 1)),
         'endDate': Timestamp.fromDate(DateTime(2024, 11, 3)),
-        'nickname': '둘째',
+        'nickname': '첫째',
       });
       print('Mock data inserted');
     } catch (e) {
