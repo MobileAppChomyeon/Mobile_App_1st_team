@@ -12,24 +12,23 @@ class Weekly extends StatefulWidget {
 
   // final String title;
 
-  void check_time(BuildContext context){ //context는 Snackbar용, 다른 방식으로 출력할거면 필요없음.
+  void check_time(BuildContext context) {
+    //context는 Snackbar용, 다른 방식으로 출력할거면 필요없음.
     var now = new DateTime.now(); //반드시 다른 함수에서 해야함, Mypage같은 클래스에서는 사용 불가능
-    String formatDate = DateFormat('yy/MM/dd - HH:mm:ss').format(now); //format변경
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar( //출력용 snackbar
-          content: Text('$formatDate'),
-          duration: Duration(seconds: 20),
-        )
-    );
+    String formatDate =
+        DateFormat('yy/MM/dd - HH:mm:ss').format(now); //format변경
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //출력용 snackbar
+      content: Text('$formatDate'),
+      duration: Duration(seconds: 20),
+    ));
   }
-
 
   @override
   State<Weekly> createState() => _WeeklyState();
 }
 
 class _WeeklyState extends State<Weekly> {
-
   int todaySleepScore = 0;
   String message = '';
   DateTime? startDate;
@@ -43,14 +42,16 @@ class _WeeklyState extends State<Weekly> {
 
   void getCurrentTime() async {
     DateTime currentDate = await NTP.now();
-    setState(() {
-      todayDate = currentDate.toUtc().add(Duration(hours: 9));
-      today = todayDate.toIso8601String().split('T')[0];
-    });
+    if (mounted) {
+      setState(() {
+        todayDate = currentDate.toUtc().add(Duration(hours: 9));
+        today = todayDate.toIso8601String().split('T')[0];
+      });
+    }
   }
 
   void loadTodaySleepData() async {
-    getCurrentTime();
+    //getCurrentTime();
     final userService = UserDataService();
     try {
       final sleepInfo = await userService.fetchSleepInfo(date: today);
@@ -99,10 +100,11 @@ class _WeeklyState extends State<Weekly> {
       // StartDate 가져오기
       final dateInfo = await userService.fetchCurrentPlantInfo();
       if (dateInfo != null) {
-        DateTime? fetchedStartDate = (dateInfo['startDate'] as Timestamp).toDate();
+        DateTime? fetchedStartDate =
+            (dateInfo['startDate'] as Timestamp).toDate();
         if (fetchedStartDate != null) {
           List<Map<String, dynamic>> dateExperienceList =
-          await generateDateExperienceList(fetchedStartDate);
+              await generateDateExperienceList(fetchedStartDate);
           setState(() {
             startDate = fetchedStartDate;
             experienceDateList = dateExperienceList;
@@ -116,12 +118,11 @@ class _WeeklyState extends State<Weekly> {
     }
   }
 
-
   // TODO: 아오 여기 수정
   Future<void> loadMockDateAndExperiences(DateTime fetchedStartDate) async {
     try {
       List<Map<String, dynamic>> dateExperienceList =
-      await generateDateExperienceList(fetchedStartDate);
+          await generateDateExperienceList(fetchedStartDate);
       setState(() {
         startDate = fetchedStartDate;
         experienceDateList = dateExperienceList;
@@ -131,9 +132,8 @@ class _WeeklyState extends State<Weekly> {
     }
   }
 
-
-
-  Future<List<Map<String, dynamic>>> generateDateExperienceList(DateTime fetchedStartDate) async {
+  Future<List<Map<String, dynamic>>> generateDateExperienceList(
+      DateTime fetchedStartDate) async {
     final userService = UserDataService();
     List<Map<String, dynamic>> dateSleepScoreList = [];
     DateTime currentDate = fetchedStartDate;
@@ -186,12 +186,11 @@ class _WeeklyState extends State<Weekly> {
   void initState() {
     super.initState();
     loadTodaySleepData();
-    loadMockDateAndExperiences(todayDate.subtract(Duration(days:7)));
+    loadMockDateAndExperiences(todayDate.subtract(Duration(days: 7)));
   }
 
   @override
   Widget build(BuildContext context) {
-
     final Size size = MediaQuery.of(context).size;
     loadTodaySleepData();
 
@@ -202,62 +201,58 @@ class _WeeklyState extends State<Weekly> {
         leading: IconButton(
             onPressed: () {
               Navigator.pop(context);
-            }, icon: const Icon(Icons.arrow_back_ios)),
-        title: const Text(
-            '수면 기록',
+            },
+            icon: const Icon(Icons.arrow_back_ios)),
+        title: const Text('수면 기록',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         centerTitle: true,
         elevation: 0,
       ),
       body: Padding(
-        padding: EdgeInsets.fromLTRB(size.width * 0.08, size.height * 0.04, size.width * 0.08, size.height * 0.04),
+        padding: EdgeInsets.fromLTRB(size.width * 0.08, size.height * 0.04,
+            size.width * 0.08, size.height * 0.04),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("오늘의 수면 경험치",
-                style: TextStyle(fontWeight: FontWeight.normal, fontSize: 19)
-            ),
-            SizedBox(
-                height: size.height * 0.02
-            ),
+                style: TextStyle(fontWeight: FontWeight.normal, fontSize: 19)),
+            SizedBox(height: size.height * 0.02),
             GestureDetector(
               onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) {
-                      //checkUpdate();
-                      return Daily(
-                        chosen: today,
-                      );
-                    }));
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  //checkUpdate();
+                  return Daily(
+                    chosen: today,
+                  );
+                }));
               },
               child: Container(
                 width: size.width * 0.84,
                 height: size.height * 0.15,
                 child: Row(
                   children: [
-                    SizedBox(
-                        width:size.width * 0.06
-                    ),
+                    SizedBox(width: size.width * 0.06),
                     todaySleepScore != 0
-                        ? Text('${todaySleepScore}', style:
-                    TextStyle(fontWeight: FontWeight.w500,fontSize: 35),
-                      textAlign: TextAlign.center,)
+                        ? Text(
+                            '${todaySleepScore}',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w500, fontSize: 35),
+                            textAlign: TextAlign.center,
+                          )
                         : Center(child: CircularProgressIndicator()),
-                    SizedBox(
-                        width:size.width * 0.04
-                    ),
+                    SizedBox(width: size.width * 0.04),
                     Container(
                       width: size.width * 0.55,
                       child: Center(
-                        child: Text('${message}',
-                          style: TextStyle(fontWeight: FontWeight.w300,fontSize: 11),
+                        child: Text(
+                          '${message}',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w300, fontSize: 11),
                           textAlign: TextAlign.left,
                         ),
                       ),
                     ),
-                    SizedBox(
-                        width: size.width * 0.03
-                    ),
+                    SizedBox(width: size.width * 0.03),
                     Icon(Icons.chevron_right, size: 12),
                   ],
                 ),
@@ -278,8 +273,7 @@ class _WeeklyState extends State<Weekly> {
               height: 60,
             ),
             Text("지난날의 수면 경험치들",
-                style: TextStyle(fontWeight: FontWeight.normal, fontSize: 19)
-            ),
+                style: TextStyle(fontWeight: FontWeight.normal, fontSize: 19)),
             SizedBox(
               height: size.height * 0.02,
             ),
@@ -290,7 +284,8 @@ class _WeeklyState extends State<Weekly> {
                 borderRadius: BorderRadius.all(Radius.circular(10)),
                 color: Color(0xffA3BFD9).withOpacity(0.2),
               ),
-              padding: EdgeInsets.fromLTRB(size.width * 0.06, size.height * 0.02, size.width * 0.06, size.height * 0.02),
+              padding: EdgeInsets.fromLTRB(size.width * 0.06,
+                  size.height * 0.02, size.width * 0.06, size.height * 0.02),
               child: ListView.builder(
                 itemCount: experienceDateList.length,
                 itemBuilder: (context, index) {
@@ -302,10 +297,10 @@ class _WeeklyState extends State<Weekly> {
                     onTap: () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                            return Daily(
-                              chosen: item['date'],
-                            );
-                          }));
+                        return Daily(
+                          chosen: item['date'],
+                        );
+                      }));
                     },
                     trailing: Icon(Icons.chevron_right, size: 16),
                   );

@@ -40,7 +40,6 @@ class SleepDataFetcher {
   // private 생성자
   SleepDataFetcher._internal();
 
-
   /// HealthKit / Google Fit 초기화
   Future<void> configure() async {
     await _health.configure();
@@ -148,8 +147,7 @@ class SleepDataFetcher {
     final Random random = Random();
 
     for (int i = 0; i < days; i++) {
-      final currentDate =
-      startDate.subtract(Duration(days: i));
+      final currentDate = startDate.subtract(Duration(days: i));
 
       // 총 수면 시간 (240~720분 -> 4시간 ~ 12시간)
       final totalSleepMinutes = 240 + random.nextInt(481); // 최소 240분, 최대 720분

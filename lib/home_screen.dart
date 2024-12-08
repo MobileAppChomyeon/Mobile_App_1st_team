@@ -76,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _initializePlant();
     updateExperience(sleepScore);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && totalSleepDuration >= 100) {
+      if (mounted && totalSleepDuration >= 4000) {
         // 경험치 최대치되면!!
         _showPlantPopup();
       }
@@ -181,13 +181,13 @@ class _HomeScreenState extends State<HomeScreen> {
     if (currentPlantData != null) {
       plantId = currentPlantData!['plantId'];
       String imageUrl = '';
-      if (totalSleepDuration < 100) {
+      if (totalSleepDuration < 1000) {
         imageUrl = 'assets/flower/$plantId/${plantId}1.png';
         dataService.savePlantInfo(growthStage: 1, imageUrl: imageUrl);
-      } else if (totalSleepDuration < 300) {
+      } else if (totalSleepDuration < 2000) {
         imageUrl = 'assets/flower/$plantId/${plantId}2.png';
         dataService.savePlantInfo(growthStage: 2, imageUrl: imageUrl);
-      } else if (totalSleepDuration < 500) {
+      } else if (totalSleepDuration < 3000) {
         imageUrl = 'assets/flower/$plantId/${plantId}3.png';
         dataService.savePlantInfo(growthStage: 3, imageUrl: imageUrl);
       } else {
@@ -562,7 +562,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     // TODO: Progress Bar 비율 계산, 레벨 나누기
     final double totalProgress =
-        (totalSleepDuration / 100).clamp(0.0, 1.0); // 0~1 범위로 제한
+        ((totalSleepDuration % 1000) / 1000).clamp(0.0, 1.0); // 0~1 범위로 제한
     final double todayProgress =
         (sleepScore / 100).clamp(0.0, 1.0); // 0~1 범위로 제한
     final double maxWidth = MediaQuery.of(context).size.width - 32; // 좌우 여백 적용
