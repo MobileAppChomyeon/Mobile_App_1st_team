@@ -54,7 +54,14 @@ class _WeeklyState extends State<Weekly> {
     final userService = UserDataService();
     try {
       final sleepInfo = await userService.fetchSleepInfo(date: today);
-      if (sleepInfo?['sleepScore'] == null) {
+      if (sleepInfo?['sleepScore'] != null) {
+        if (mounted) {
+          setState(() {
+            todaySleepScore = sleepInfo?['sleepScore'] ?? todaySleepScore;
+            message = getSleepFeedback(todaySleepScore);
+          });
+        }
+      } else {
         print('No sleep info found for the first given date.');
         DateTime currentDate = await NTP.now();
         setState(() {
@@ -70,13 +77,6 @@ class _WeeklyState extends State<Weekly> {
           });
         }
         isUpdate = false;
-      } else {
-        if (mounted) {
-          setState(() {
-            todaySleepScore = sleepInfo?['sleepScore'] ?? todaySleepScore;
-            message = getSleepFeedback(todaySleepScore);
-          });
-        }
       }
     } catch (e) {
       print('Error loading sleep goal: $e');
@@ -119,7 +119,6 @@ class _WeeklyState extends State<Weekly> {
 
   // TODO: 아오 여기 수정
   Future<void> loadMockDateAndExperiences(DateTime fetchedStartDate) async {
-    final userService = UserDataService();
     try {
       List<Map<String, dynamic>> dateExperienceList =
       await generateDateExperienceList(fetchedStartDate);
@@ -149,6 +148,7 @@ class _WeeklyState extends State<Weekly> {
           'date': formattedDate,
           'experience': sleepScore, // 'experience' 키로 저장
         });
+        print("date: $formattedDate, experience: $sleepScore");
       } catch (e) {
         print('Error fetching sleepScore for $formattedDate: $e');
         dateSleepScoreList.add({
@@ -185,6 +185,7 @@ class _WeeklyState extends State<Weekly> {
   void initState() {
     super.initState();
     loadTodaySleepData();
+    loadMockDateAndExperiences(todayDate.subtract(Duration(days:7)));
   }
 
   @override
@@ -207,23 +208,7 @@ class _WeeklyState extends State<Weekly> {
         centerTitle: true,
         elevation: 0,
       ),
-      body: FutureBuilder(
-        future: loadMockDateAndExperiences(DateTime.now().subtract(const Duration(days: 7))),
-        builder: (context, snapshot) {
-          /*if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-                child: CircularProgressIndicator()
-                );
-          }
-
-          if (snapshot.hasError) {
-            return Text('에러: ${snapshot.error}');
-          }
-
-          if (snapshot.hasData) {
-            return Text("데이터 로드 완료");
-          }*/
-        return Padding(
+      body: Padding(
           padding: EdgeInsets.fromLTRB(size.width * 0.08, size.height * 0.04, size.width * 0.08, size.height * 0.04),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,22 +235,24 @@ class _WeeklyState extends State<Weekly> {
                   child: Row(
                     children: [
                       SizedBox(
-                          width:35
+                          width:size.width * 0.06
                       ),
-                      Text('${todaySleepScore}', style:
-                      TextStyle(fontWeight: FontWeight.w500,fontSize: 40),
-                        textAlign: TextAlign.right,),
+                      todaySleepScore != 0
+                          ? Text('${todaySleepScore}', style:
+                      TextStyle(fontWeight: FontWeight.w500,fontSize: 35),
+                        textAlign: TextAlign.right,)
+                          : Center(child: CircularProgressIndicator()),
                       SizedBox(
-                          width:20
+                          width:size.width * 0.04
                       ),
                       Text('${message}',
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: TextStyle(fontWeight: FontWeight.w300,fontSize: 11),
                         textAlign: TextAlign.left,
                       ),
                       SizedBox(
-                          width: size.width * 0.04
+                          width: size.width * 0.03
                       ),
-                      Icon(Icons.chevron_right, size: 14),
+                      Icon(Icons.chevron_right, size: 12),
                     ],
                   ),
                   decoration: const BoxDecoration(
@@ -321,9 +308,8 @@ class _WeeklyState extends State<Weekly> {
               ),
             ],
           ),
-        );},
-      ),
-    );
+        ),
+      );
   }
 }
 

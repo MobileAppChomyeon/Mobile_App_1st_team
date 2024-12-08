@@ -212,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       for (int i = 0; i < duration; i++) {
-        final currentDate = startDate.add(Duration(days: i));
+        final currentDate = startDate.add(Duration(days: i+1));
         final today = currentDate.toIso8601String().split('T')[0];
         var dayIndex = i;
 
@@ -271,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // 1. Goal 데이터를 채우기
       for (int i = 0; i <= duration; i++) {
-        final currentDate = startDate.add(Duration(days: i));
+        final currentDate = startDate.add(Duration(days: i+1));
         final today = currentDate.toIso8601String().split('T')[0];
 
         // GoalData 가져오기
@@ -303,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // 2. SleepInfo 데이터를 업데이트
       for (int i = 0; i <= duration; i++) {
-        final currentDate = startDate.add(Duration(days: i));
+        final currentDate = startDate.add(Duration(days: i+1));
         final today = currentDate.toIso8601String().split('T')[0];
 
         final GoalData = await userService.fetchGoal(date: today);
@@ -368,7 +368,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // sleepData에 대해서 반복
       for (int i = 0; i < duration; i++) {
-        final currentDate = startDate.add(Duration(days: i));
+        final currentDate = startDate.add(Duration(days: i+1));
         final today = currentDate.toIso8601String().split('T')[0];
 
         var dayIndex = i;
