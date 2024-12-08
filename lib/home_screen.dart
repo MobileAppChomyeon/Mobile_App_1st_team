@@ -353,7 +353,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return {'hour': hour, 'minute': rawMinute};
   }
 
-  void updateScore(DateTime startDate, List sleepDataList) async {
+  Future <void> updateScore(DateTime startDate, List sleepDataList) async {
     final userService = UserDataService();
     int duration = currentTime.difference(startDate).inDays;
 
@@ -479,21 +479,26 @@ class _HomeScreenState extends State<HomeScreen> {
       final oneWeekAgo = now.subtract(const Duration(days: 7)); //days 수정 가능
       final sleepData = await _sleepDataFetcher.fetchSleepData(oneWeekAgo, now);
       updateSleepData(oneWeekAgo, sleepData);
-      updateGoal(oneWeekAgo);
-      updateScore(oneWeekAgo, sleepData);
 
-      setState(() {
-        if (sleepData.isEmpty) {
-          _sleepDataText = '수면 데이터가 없습니다';
-        } else {
-          print('수면 데이터: $sleepData'); // 디버깅용 로그
-          _sleepDataText = message;
-          // sleepData
-          // .map((data) =>
-          //     '${data.type} ${data.dateFrom.month}/${data.dateFrom.day}${data.dateFrom.hour}:${data.dateFrom.minute} - ${data.dateTo.month}/${data.dateTo.day}${data.dateTo.hour}:${data.dateTo.minute}')
-          // .join('\n');
-        }
-      });
+      try {
+        await updateGoal(oneWeekAgo);
+        await updateScore(oneWeekAgo, sleepData);
+      } catch (e) {
+        print('Error updating goals or scores: $e');
+
+        setState(() {
+          if (sleepData.isEmpty) {
+            _sleepDataText = '수면 데이터가 없습니다';
+          } else {
+            print('수면 데이터: $sleepData');
+            _sleepDataText = message;
+            // sleepData
+            // .map((data) =>
+            //     '${data.type} ${data.dateFrom.month}/${data.dateFrom.day}${data.dateFrom.hour}:${data.dateFrom.minute} - ${data.dateTo.month}/${data.dateTo.day}${data.dateTo.hour}:${data.dateTo.minute}')
+            // .join('\n');
+          }
+        });
+      }
     }
   }
 

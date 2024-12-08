@@ -83,7 +83,7 @@ class _WeeklyState extends State<Weekly> {
     }
   }
 
-  void checkUpdate() async {
+  /*void checkUpdate() async {
     if (isUpdate) {
       DateTime currentDate = await NTP.now();
       setState(() {
@@ -91,7 +91,7 @@ class _WeeklyState extends State<Weekly> {
         today = todayDate.toIso8601String().split('T')[0];
       });
     }
-  }
+  }*/
 
   Future<void> loadStartDateAndExperiences() async {
     final userService = UserDataService();
@@ -137,8 +137,9 @@ class _WeeklyState extends State<Weekly> {
     final userService = UserDataService();
     List<Map<String, dynamic>> dateSleepScoreList = [];
     DateTime currentDate = fetchedStartDate;
+    DateTime beforeDate = todayDate.subtract(Duration(days: 1));
 
-    while (!currentDate.isAfter(todayDate)) {
+    while (!currentDate.isAfter(beforeDate)) {
       String formattedDate = DateFormat('yyyy-MM-dd').format(currentDate);
       try {
         final sleepInfo = await userService.fetchSleepInfo(date: formattedDate);
@@ -209,107 +210,112 @@ class _WeeklyState extends State<Weekly> {
         elevation: 0,
       ),
       body: Padding(
-          padding: EdgeInsets.fromLTRB(size.width * 0.08, size.height * 0.04, size.width * 0.08, size.height * 0.04),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("오늘의 수면 경험치",
-                  style: TextStyle(fontWeight: FontWeight.normal, fontSize: 19)
-              ),
-              SizedBox(
-                  height: size.height * 0.02
-              ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) {
-                        checkUpdate();
-                        return Daily(
-                          chosen: today,
-                        );
-                      }));
-                },
-                child: Container(
-                  width: size.width * 0.84,
-                  height: size.height * 0.15,
-                  child: Row(
-                    children: [
-                      SizedBox(
-                          width:size.width * 0.06
+        padding: EdgeInsets.fromLTRB(size.width * 0.08, size.height * 0.04, size.width * 0.08, size.height * 0.04),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("오늘의 수면 경험치",
+                style: TextStyle(fontWeight: FontWeight.normal, fontSize: 19)
+            ),
+            SizedBox(
+                height: size.height * 0.02
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) {
+                      //checkUpdate();
+                      return Daily(
+                        chosen: today,
+                      );
+                    }));
+              },
+              child: Container(
+                width: size.width * 0.84,
+                height: size.height * 0.15,
+                child: Row(
+                  children: [
+                    SizedBox(
+                        width:size.width * 0.06
+                    ),
+                    todaySleepScore != 0
+                        ? Text('${todaySleepScore}', style:
+                    TextStyle(fontWeight: FontWeight.w500,fontSize: 35),
+                      textAlign: TextAlign.center,)
+                        : Center(child: CircularProgressIndicator()),
+                    SizedBox(
+                        width:size.width * 0.04
+                    ),
+                    Container(
+                      width: size.width * 0.55,
+                      child: Center(
+                        child: Text('${message}',
+                          style: TextStyle(fontWeight: FontWeight.w300,fontSize: 11),
+                          textAlign: TextAlign.left,
+                        ),
                       ),
-                      todaySleepScore != 0
-                          ? Text('${todaySleepScore}', style:
-                      TextStyle(fontWeight: FontWeight.w500,fontSize: 35),
-                        textAlign: TextAlign.right,)
-                          : Center(child: CircularProgressIndicator()),
-                      SizedBox(
-                          width:size.width * 0.04
-                      ),
-                      Text('${message}',
-                        style: TextStyle(fontWeight: FontWeight.w300,fontSize: 11),
-                        textAlign: TextAlign.left,
-                      ),
-                      SizedBox(
-                          width: size.width * 0.03
-                      ),
-                      Icon(Icons.chevron_right, size: 12),
+                    ),
+                    SizedBox(
+                        width: size.width * 0.03
+                    ),
+                    Icon(Icons.chevron_right, size: 12),
+                  ],
+                ),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Color(0xffA3BFD9),
+                      Color(0xffC1E1C1),
                     ],
                   ),
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        Color(0xffA3BFD9),
-                        Color(0xffC1E1C1),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 60,
-              ),
-              Text("지난날의 수면 경험치들",
-                  style: TextStyle(fontWeight: FontWeight.normal, fontSize: 19)
-              ),
-              SizedBox(
-                height: size.height * 0.02,
-              ),
-              Container(
-                width: size.width * 0.84,
-                height: size.height * 0.35,
-                decoration: BoxDecoration(
                   borderRadius: BorderRadius.all(Radius.circular(10)),
-                  color: Color(0xffA3BFD9).withOpacity(0.2),
-                ),
-                padding: EdgeInsets.fromLTRB(size.width * 0.06, size.height * 0.02, size.width * 0.06, size.height * 0.02),
-                child: ListView.builder(
-                  itemCount: experienceDateList.length,
-                  itemBuilder: (context, index) {
-                    final item = experienceDateList[index];
-
-                    return ListTile(
-                      title: Text('${item['date']}: ${item['experience']} 경험치',
-                          style: Theme.of(context).textTheme.bodyMedium),
-                      onTap: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) {
-                              return Daily(
-                                chosen: item['date'],
-                              );
-                            }));
-                      },
-                      trailing: Icon(Icons.chevron_right, size: 16),
-                    );
-                  },
                 ),
               ),
-            ],
-          ),
+            ),
+            SizedBox(
+              height: 60,
+            ),
+            Text("지난날의 수면 경험치들",
+                style: TextStyle(fontWeight: FontWeight.normal, fontSize: 19)
+            ),
+            SizedBox(
+              height: size.height * 0.02,
+            ),
+            Container(
+              width: size.width * 0.84,
+              height: size.height * 0.35,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+                color: Color(0xffA3BFD9).withOpacity(0.2),
+              ),
+              padding: EdgeInsets.fromLTRB(size.width * 0.06, size.height * 0.02, size.width * 0.06, size.height * 0.02),
+              child: ListView.builder(
+                itemCount: experienceDateList.length,
+                itemBuilder: (context, index) {
+                  final item = experienceDateList[index];
+
+                  return ListTile(
+                    title: Text('${item['date']}: ${item['experience']} 경험치',
+                        style: Theme.of(context).textTheme.bodyMedium),
+                    onTap: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                            return Daily(
+                              chosen: item['date'],
+                            );
+                          }));
+                    },
+                    trailing: Icon(Icons.chevron_right, size: 16),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
-      );
+      ),
+    );
   }
 }
 
