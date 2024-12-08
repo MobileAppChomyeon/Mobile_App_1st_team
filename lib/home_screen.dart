@@ -73,8 +73,8 @@ class _HomeScreenState extends State<HomeScreen> {
     sleepComment = "어느정도 주무셨군요!\n오늘은 조금 더 일찍 잠에 들어 보세요";
     getCurrentTime();
     _initialize();
-    _initializePlant();
     updateExperience(sleepScore);
+    _initializePlant();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && totalSleepDuration >= 4000) {
         // 경험치 최대치되면!!
@@ -552,7 +552,6 @@ class _HomeScreenState extends State<HomeScreen> {
         'todayScore': todayScore,
       });
 
-      print('Experience updated successfully.');
     } catch (e) {
       print('Error updating experience: $e');
     }

@@ -176,7 +176,9 @@ class SleepDataFetcher {
 
       // REM 수면 시작 및 종료 시간
       final remSleepStart = sleepStart.add(Duration(
-          minutes: random.nextInt(totalSleepMinutes - totalStageMinutes)));
+          minutes: random
+              .nextInt(totalSleepMinutes - totalStageMinutes)
+              .clamp(0, totalSleepMinutes)));
       final remSleepEnd = remSleepStart.add(Duration(minutes: remSleepMinutes));
 
       // 얕은 수면 시작 및 종료 시간
