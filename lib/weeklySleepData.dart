@@ -51,7 +51,7 @@ class _WeeklyState extends State<Weekly> {
   }
 
   void loadTodaySleepData() async {
-    //getCurrentTime();
+    getCurrentTime();
     final userService = UserDataService();
     try {
       final sleepInfo = await userService.fetchSleepInfo(date: today);
