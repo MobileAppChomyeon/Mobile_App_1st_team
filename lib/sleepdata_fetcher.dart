@@ -157,28 +157,17 @@ class SleepDataFetcher {
       final sleepEnd = currentDate;
 
       // 각 수면 단계의 시간 생성
-      int remSleepMinutes =
-          (30 + random.nextDouble() * 90).toInt(); // 30 ~ 120분
+      int remSleepMinutes = (30 + random.nextDouble() * 30).toInt(); // 30 ~ 60분
       int lightSleepMinutes =
-          (60 + random.nextDouble() * 60).toInt(); // 60 ~ 120분
+          (60 + random.nextDouble() * 30).toInt(); // 60 ~ 90분
       int deepSleepMinutes =
-          (30 + random.nextDouble() * 90).toInt(); // 30 ~ 120분
+          (30 + random.nextDouble() * 30).toInt(); // 30 ~ 60분
 
       // 수면 단계 합이 총 수면 시간 초과 시 조정
-      int totalStageMinutes =
-          remSleepMinutes + lightSleepMinutes + deepSleepMinutes;
-      if (totalStageMinutes > totalSleepMinutes) {
-        final adjustmentFactor = totalSleepMinutes / totalStageMinutes;
-        remSleepMinutes = (remSleepMinutes * adjustmentFactor).toInt();
-        lightSleepMinutes = (lightSleepMinutes * adjustmentFactor).toInt();
-        deepSleepMinutes = (deepSleepMinutes * adjustmentFactor).toInt();
-      }
 
       // REM 수면 시작 및 종료 시간
-      final remSleepStart = sleepStart.add(Duration(
-          minutes: random
-              .nextInt(totalSleepMinutes - totalStageMinutes)
-              .clamp(0, totalSleepMinutes)));
+      final remSleepStart =
+          sleepStart.add(Duration(minutes: random.nextInt(20)));
       final remSleepEnd = remSleepStart.add(Duration(minutes: remSleepMinutes));
 
       // 얕은 수면 시작 및 종료 시간

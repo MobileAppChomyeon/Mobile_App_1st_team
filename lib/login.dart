@@ -33,7 +33,8 @@ class _LoginScreenState extends State<LoginScreen> {
           .get();
 
       // nickname 필드 확인
-      if (currentPlantDoc.exists && currentPlantDoc.data()?['nickname'] != null) {
+      if (currentPlantDoc.exists &&
+          currentPlantDoc.data()?['nickname'] != null) {
         // nickname 존재 -> HomeScreen으로 이동
         Navigator.pushReplacement(
           context,
@@ -165,7 +166,8 @@ class _LoginScreenState extends State<LoginScreen> {
             ],
           ),
           actions: [
-            Center( // 버튼을 가운데 정렬
+            Center(
+              // 버튼을 가운데 정렬
               child: TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(); // 팝업 닫기
@@ -212,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       final GoogleSignInAuthentication googleAuth =
-      await googleUser.authentication;
+          await googleUser.authentication;
 
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
@@ -220,7 +222,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       final userCredential =
-      await FirebaseAuth.instance.signInWithCredential(credential);
+          await FirebaseAuth.instance.signInWithCredential(credential);
 
       // 로그인 성공 시 다음 페이지로 이동
       await _navigateBasedOnUserInfo(userCredential.user!);
@@ -264,7 +266,8 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const RegisterScreen()),
                 );
               },
               child: const Text(
@@ -281,7 +284,8 @@ class _LoginScreenState extends State<LoginScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color.fromRGBO(82, 110, 160, 1.0),
-                minimumSize: Size.fromHeight(size.height * 0.06), // 너비의 80%, 높이의 6%
+                minimumSize:
+                    Size.fromHeight(size.height * 0.06), // 너비의 80%, 높이의 6%
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
@@ -307,7 +311,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              onPressed: () => _showLoginModal(true), // Google 로그인 모달
+              onPressed: () =>
+                  _loginWithGoogle(), //_showLoginModal(true), // Google 로그인 모달
               child: Stack(
                 children: [
                   Align(
