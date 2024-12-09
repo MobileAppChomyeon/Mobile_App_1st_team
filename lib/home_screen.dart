@@ -200,6 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
       startToGrow = startDateTimestamp.toDate();
 
       plantImage = imageUrl;
+      print("아니 식물 이미지는 또 왜 안돼 $plantImage, $totalSleepDuration");
     } else {
       plantName = '이름이 없어요';
       backgroundImage = 'assets/background/morning.png';
@@ -552,6 +553,8 @@ class _HomeScreenState extends State<HomeScreen> {
         'todayScore': todayScore,
       });
 
+      print(
+          'Experience updated successfully. $updatedTotalScore, $totalSleepDuration');
     } catch (e) {
       print('Error updating experience: $e');
     }
@@ -691,6 +694,32 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
+                  VerticalIconButton(
+                      iconName: "gear",
+                      label: "데모용",
+                      onPressed: () {
+                        totalSleepDuration += 1100;
+                        print("totalSleepDuration값은 이것이다: $totalSleepDuration");
+
+                        setState(() {
+                          if (totalSleepDuration < 1000) {
+                            plantImage =
+                                'assets/flower/$plantId/${plantId}1.png';
+                          } else if (totalSleepDuration < 2000) {
+                            plantImage =
+                                'assets/flower/$plantId/${plantId}2.png';
+                          } else if (totalSleepDuration < 3000) {
+                            plantImage =
+                                'assets/flower/$plantId/${plantId}3.png';
+                          } else {
+                            plantImage =
+                                'assets/flower/$plantId/${plantId}4.png';
+                          }
+                        });
+                        if (mounted && totalSleepDuration >= 4000) {
+                          _showPlantPopup();
+                        }
+                      })
                 ],
               ),
             ),
