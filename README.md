@@ -62,19 +62,33 @@ TODO:
 ```plaintext
 project_root/
 ├── lib/
-│   ├── main.dart                 # 앱의 진입점 파일
-│   ├── screens/
-│   │   ├── home_screen.dart       # 각 화면 파일
-│   │   └── next_screen.dart
-│   ├── widgets/
-│   │   ├── custom_button.dart     # 재사용 가능한 위젯
-│   │   └── custom_text_field.dart
-│   └── models/
-│       └── user.dart              # 데이터 모델 파일
-├── assets/                        # 이미지, 폰트 등의 리소스 파일
-│   └── image1.png                 # 예시 image1.png
-├── pubspec.yaml                   # 의존성 및 설정 파일
-└── README.md 
+│   ├── main.dart             # 앱의 진입점 파일
+│   ├── background_select_page.dart
+│   ├── home_screen.dart      # 메인 화면
+│   ├── login.dart
+│   ├── 다양한 .dart 파일들...
+│   └── weeklySleepData.dart
+├── assets/                   # 리소스 파일
+│   ├── background/           # 배경 이미지
+│   ├── flower/               # 꽃 관련 이미지
+│   │   ├── ageratum/
+│   │   ├── complete/
+│   │   ├── cosmos/
+│   │   ├── daisy/
+│   │   └── silhouette/
+│   ├── fonts/                # 폰트 파일
+│   ├── icons/                # SVG 아이콘 파일
+│   │   ├── book.svg
+│   │   ├── dquote1.svg
+│   │   ├── dquote2.svg
+│   │   ├── gear.svg
+│   │   └── moon.svg
+│   └── images/               # 일반 이미지
+│       ├── app_logo.png
+│       ├── google_logo.png
+│       └── hanja.png
+├── pubspec.yaml              # 의존성 및 설정 파일
+└── README.md                 # 프로젝트 설명
 ```
 
 <br/>
