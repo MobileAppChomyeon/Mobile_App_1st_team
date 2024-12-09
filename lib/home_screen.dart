@@ -480,7 +480,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       _isAuthorized = isAuthorized;
-      dataService.updateMockEncyclopedia();
+      // dataService.updateMockEncyclopedia();
     });
 
     if (isAuthorized) {
