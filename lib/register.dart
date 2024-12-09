@@ -17,36 +17,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool showPasswordError = false;
   bool showPasswordLengthError = false;
+  bool showEmailError = false;
+
+  // bool _validateEmail() {
+  //   final email = emailController.text.trim();
+  //   final isValidEmail = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(email);
+  //   // if (!isValidEmail) {
+  //   //   ScaffoldMessenger.of(context).showSnackBar(
+  //   //     const SnackBar(content: Text('유효한 이메일 주소를 입력하세요.')),
+  //   //   );
+  //   // }
+  //   // showEmailError = isValidEmail;
+  //   return showEmailError = !isValidEmail;
+  // }
+
+  Map<String, bool> _validatePasswords() {
+    setState(() {
+      // 비밀번호 길이가 6자 이상인지 검증
+      showPasswordLengthError = passwordController.text.length < 6;
+      print('길이 유효성 여부: $showPasswordLengthError');
+
+      // 비밀번호와 확인 비밀번호가 일치하는지 검증
+      showPasswordError =
+          passwordController.text != confirmPasswordController.text;
+      print('일치 유효성 여부: $showPasswordError');
+
+      final email = emailController.text.trim();
+      final isValidEmail = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(email);
+      showEmailError = !isValidEmail;
+      print('이메일 유효성 여부: $showEmailError');
+    });
+
+    return {
+      'showPasswordError': showPasswordError,
+      'showPasswordLengthError': showPasswordLengthError,
+      'showEmailError': showEmailError,
+    };
+  }
+
 
   // 이메일로 회원가입
   Future<void> _registerWithEmail() async {
-    // 비밀번호 길이 체크
-    if (passwordController.text.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('비밀번호는 최소 6자리 이상이어야 합니다.'),
-          duration: Duration(seconds: 2), // 표시 시간 설정
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      showPasswordLengthError = passwordController.text.length < 6;
-      showPasswordError =
-          passwordController.text != confirmPasswordController.text;
-    });
-
-    if (showPasswordError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('비밀번호가 일치하지 않습니다.'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-      return;
-    }
-
+    // if (!_validatePasswords()) {
+    //   // 비밀번호 검증 실패 시 함수 종료
+    //   return;
+    // }
     try {
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
@@ -54,7 +69,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email registration completed!')),
+        const SnackBar(content: Text('회원가입이 완료되었습니다.')),
       );
 
       // 회원가입 성공 후 로그인 페이지로 이동
@@ -64,13 +79,64 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.message}')),
+        SnackBar(content: Text('Firebase Error: ${e.message}')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Unexpected error: ${e.toString()}')),
       );
     }
+    // 비밀번호 길이 체크
+    // if (passwordController.text.length < 6) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(
+    //       content: Text('비밀번호는 최소 6자리 이상이어야 합니다.'),
+    //       duration: Duration(seconds: 2), // 표시 시간 설정
+    //     ),
+    //   );
+    //   return;
+    // }
+    //
+    // setState(() {
+    //   showPasswordLengthError = passwordController.text.length < 6;
+    //   showPasswordError =
+    //       passwordController.text != confirmPasswordController.text;
+    // });
+    //
+    // if (showPasswordError) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(
+    //       content: Text('비밀번호가 일치하지 않습니다.'),
+    //       duration: Duration(seconds: 2),
+    //     ),
+    //   );
+    //   return;
+    // }
+    //
+    // try {
+    //   await FirebaseAuth.instance.createUserWithEmailAndPassword(
+    //     email: emailController.text.trim(),
+    //     password: passwordController.text,
+    //   );
+    //
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(content: Text('Email registration completed!')),
+    //   );
+    //
+    //   // 회원가입 성공 후 로그인 페이지로 이동
+    //   Navigator.pushReplacement(
+    //     context,
+    //     MaterialPageRoute(builder: (context) => const LoginScreen()),
+    //   );
+    // } on FirebaseAuthException catch (e) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(content: Text('Error: ${e.message}')),
+    //   );
+    // } catch (e) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(content: Text('Unexpected error: ${e.toString()}')),
+    //   );
+    // }
   }
 
   // Google 회원가입
@@ -175,11 +241,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       obscureText: true,
                     ),
-                    if (showPasswordError)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8.0),
+                    // 상태에 따른 경고 메시지 표시
+                    if (showEmailError)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
                         child: Text(
-                          '비밀번호가 맞지 않습니다.',
+                          '유효한 이메일을 입력하세요',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.red,
@@ -187,8 +254,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                     if (showPasswordLengthError)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8.0),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
                         child: Text(
                           '비밀번호는 6자리 이상이어야 합니다.',
                           style: TextStyle(
@@ -197,21 +264,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                       ),
+                    if (showPasswordError)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          '비밀번호가 일치하지 않습니다.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          // 비밀번호 길이 체크
-                          showPasswordLengthError = passwordController.text.length < 6;
-                          // 비밀번호 확인 체크
-                          showPasswordError =
-                              passwordController.text != confirmPasswordController.text;
-                        });
-
-                        // 모든 조건 충족 시 회원가입 시도
-                        if (!showPasswordError && !showPasswordLengthError) {
-                          _registerWithEmail();
+                      onPressed: () async {
+                        FocusScope.of(context).unfocus(); // 키보드 닫기
+                        // final emailResult = _validateEmail();
+                        final result = _validatePasswords();
+                        if (!result['showPasswordError']! && !result['showPasswordLengthError']! && !result['showEmailError']!) {
+                          await _registerWithEmail();
+                        } else {
+                          print('Validation failed');
                         }
+                        // setState(() {
+                        //   // 비밀번호 길이 체크
+                        //   showPasswordLengthError = passwordController.text.length < 6;
+                        //   // 비밀번호 확인 체크
+                        //   showPasswordError =
+                        //       passwordController.text != confirmPasswordController.text;
+                        // });
+                        //
+                        // // 모든 조건 충족 시 회원가입 시도
+                        // if (!showPasswordError && !showPasswordLengthError) {
+                        //   _registerWithEmail();
+                        // }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromRGBO(82, 110, 160, 1.0),
