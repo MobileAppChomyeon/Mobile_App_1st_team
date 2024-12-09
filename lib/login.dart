@@ -341,38 +341,38 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     SizedBox(height: size.height * 0.01), // 높이의 2% 간격
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        minimumSize: Size.fromHeight(size.height * 0.06),
-                        side: const BorderSide(color: Colors.black, width: 1),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                      onPressed: () async {
-                        await _loginWithGoogle(); // Google 로그인 바로 실행
-                      },
-                      child: Stack(
-                        children: [
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Image.asset('assets/images/google_logo.png'),
-                          ),
-                          Center(
-                            child: const Text(
-                              'Google 로그인',
-                              style: TextStyle(
-                                fontFamily: "Pretendard",
-                                fontWeight: FontWeight.w400,
-                                fontSize: 20,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    // ElevatedButton(
+                    //   style: ElevatedButton.styleFrom(
+                    //     backgroundColor: Colors.white,
+                    //     minimumSize: Size.fromHeight(size.height * 0.06),
+                    //     side: const BorderSide(color: Colors.black, width: 1),
+                    //     shape: RoundedRectangleBorder(
+                    //       borderRadius: BorderRadius.circular(8.0),
+                    //     ),
+                    //   ),
+                    //   onPressed: () async {
+                    //     await _loginWithGoogle(); // Google 로그인 바로 실행
+                    //   },
+                    //   child: Stack(
+                    //     children: [
+                    //       Align(
+                    //         alignment: Alignment.centerLeft,
+                    //         child: Image.asset('assets/images/google_logo.png'),
+                    //       ),
+                    //       Center(
+                    //         child: const Text(
+                    //           'Google 로그인',
+                    //           style: TextStyle(
+                    //             fontFamily: "Pretendard",
+                    //             fontWeight: FontWeight.w400,
+                    //             fontSize: 20,
+                    //             color: Colors.black,
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
                   ],
                 ),
               ),

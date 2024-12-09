@@ -341,7 +341,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
-                "이메일과 구글로 회원가입 해보세요",
+                "이메일로 회원가입 해보세요",
                 style: TextStyle(
                   fontFamily: "Pretendard",
                   fontWeight: FontWeight.w400,
@@ -350,37 +350,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 50),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  minimumSize: const Size.fromHeight(50),
-                  side: const BorderSide(color: Colors.black, width: 1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-                onPressed: _registerWithGoogle,
-                child: Stack(
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Image.asset('assets/images/google_logo.png'),
-                    ),
-                    const Center(
-                      child: Text(
-                        'Google 회원가입하기',
-                        style: TextStyle(
-                          fontFamily: "Pretendard",
-                          fontWeight: FontWeight.w400,
-                          fontSize: 20,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
+              // ElevatedButton(
+              //   style: ElevatedButton.styleFrom(
+              //     backgroundColor: Colors.white,
+              //     minimumSize: const Size.fromHeight(50),
+              //     side: const BorderSide(color: Colors.black, width: 1),
+              //     shape: RoundedRectangleBorder(
+              //       borderRadius: BorderRadius.circular(8.0),
+              //     ),
+              //   ),
+              //   onPressed: _registerWithGoogle,
+              //   child: Stack(
+              //     children: [
+              //       Align(
+              //         alignment: Alignment.centerLeft,
+              //         child: Image.asset('assets/images/google_logo.png'),
+              //       ),
+              //       const Center(
+              //         child: Text(
+              //           'Google 회원가입하기',
+              //           style: TextStyle(
+              //             fontFamily: "Pretendard",
+              //             fontWeight: FontWeight.w400,
+              //             fontSize: 20,
+              //             color: Colors.black,
+              //           ),
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
+              // const SizedBox(height: 20),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromRGBO(82, 110, 160,1.0),
