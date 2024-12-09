@@ -16,15 +16,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController confirmPasswordController = TextEditingController();
 
   bool showPasswordError = false;
+  bool showPasswordLengthError = false;
 
   // 이메일로 회원가입
   Future<void> _registerWithEmail() async {
+    // 비밀번호 길이 체크
+    if (passwordController.text.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('비밀번호는 최소 6자리 이상이어야 합니다.'),
+          duration: Duration(seconds: 2), // 표시 시간 설정
+        ),
+      );
+      return;
+    }
+
     setState(() {
+      showPasswordLengthError = passwordController.text.length < 6;
       showPasswordError =
           passwordController.text != confirmPasswordController.text;
     });
 
-    if (showPasswordError) return;
+    if (showPasswordError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('비밀번호가 일치하지 않습니다.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
 
     try {
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -115,79 +136,107 @@ class _RegisterScreenState extends State<RegisterScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '이메일 회원가입',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: passwordController,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    border: OutlineInputBorder(),
-                  ),
-                  obscureText: true,
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: confirmPasswordController,
-                  decoration: const InputDecoration(
-                    labelText: 'Confirm Password',
-                    border: OutlineInputBorder(),
-                  ),
-                  obscureText: true,
-                ),
-                if (showPasswordError)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      '비밀번호가 맞지 않습니다.',
+            child: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(), // 키보드 숨기기
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '이메일 회원가입',
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.red,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _registerWithEmail,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromRGBO(82, 110, 160, 1.0),
-                    minimumSize: const Size.fromHeight(50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: emailController,
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        border: OutlineInputBorder(),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    '가입하기',
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: passwordController,
+                      decoration: const InputDecoration(
+                        labelText: 'Password',
+                        border: OutlineInputBorder(),
+                      ),
+                      obscureText: true,
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: confirmPasswordController,
+                      decoration: const InputDecoration(
+                        labelText: 'Confirm Password',
+                        border: OutlineInputBorder(),
+                      ),
+                      obscureText: true,
+                    ),
+                    if (showPasswordError)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          '비밀번호가 맞지 않습니다.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ),
+                    if (showPasswordLengthError)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          '비밀번호는 6자리 이상이어야 합니다.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          // 비밀번호 길이 체크
+                          showPasswordLengthError = passwordController.text.length < 6;
+                          // 비밀번호 확인 체크
+                          showPasswordError =
+                              passwordController.text != confirmPasswordController.text;
+                        });
+
+                        // 모든 조건 충족 시 회원가입 시도
+                        if (!showPasswordError && !showPasswordLengthError) {
+                          _registerWithEmail();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromRGBO(82, 110, 160, 1.0),
+                        minimumSize: const Size.fromHeight(50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                      child: const Text(
+                        '가입하기',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         );
       },
     );
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -248,7 +297,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 20),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromRGBO(82, 110, 160, 1.0),
+                  backgroundColor: const Color.fromRGBO(82, 110, 160,1.0),
                   minimumSize: const Size.fromHeight(50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
