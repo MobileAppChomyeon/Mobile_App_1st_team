@@ -105,10 +105,12 @@ class _WeeklyState extends State<Weekly> {
         if (fetchedStartDate != null) {
           List<Map<String, dynamic>> dateExperienceList =
               await generateDateExperienceList(fetchedStartDate);
-          setState(() {
-            startDate = fetchedStartDate;
-            experienceDateList = dateExperienceList;
-          });
+          if (mounted) {
+            setState(() {
+              startDate = fetchedStartDate;
+              experienceDateList = dateExperienceList;
+            });
+          }
         }
       } else {
         print('No start date found.');
@@ -123,10 +125,12 @@ class _WeeklyState extends State<Weekly> {
     try {
       List<Map<String, dynamic>> dateExperienceList =
           await generateDateExperienceList(fetchedStartDate);
-      setState(() {
-        startDate = fetchedStartDate;
-        experienceDateList = dateExperienceList;
-      });
+      if (mounted) {
+        setState(() {
+          startDate = fetchedStartDate;
+          experienceDateList = dateExperienceList;
+        });
+      }
     } catch (e) {
       print('Error loading start date: $e');
     }
