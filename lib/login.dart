@@ -53,7 +53,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-
   void _showLoginModal(bool isGoogleLogin) {
     showModalBottomSheet(
       context: context,
@@ -188,11 +187,8 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-
-
   Future<void> _loginWithEmail() async {
     try {
-
       final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text,
@@ -233,8 +229,6 @@ class _LoginScreenState extends State<LoginScreen> {
       await _showPopupMessage('로그인하지 못했습니다.');
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
