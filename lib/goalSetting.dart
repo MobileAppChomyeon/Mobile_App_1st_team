@@ -148,6 +148,7 @@ class _GoalSettingState extends State<GoalSetting> {
     final Size size = MediaQuery.of(context).size;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
