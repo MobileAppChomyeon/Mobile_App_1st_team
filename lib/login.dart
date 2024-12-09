@@ -32,15 +32,15 @@ class _LoginScreenState extends State<LoginScreen> {
           .doc('currentPlant') // currentPlant 문서
           .get();
 
-      // nickname 필드 확인
-      if (currentPlantDoc.exists && currentPlantDoc.data()?['nickname'] != null) {
+      // backgroundImage 필드 확인
+      if (currentPlantDoc.exists && currentPlantDoc.data()?['backgroundImage'] != null) {
         // nickname 존재 -> HomeScreen으로 이동
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
         );
       } else {
-        // nickname 없음 -> PlantSelect로 이동
+        // backgroundImage 없음 -> PlantSelect로 이동
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const PlantSelect()),
@@ -205,6 +205,11 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _loginWithGoogle() async {
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn();
+
+      // 기존 로그인 상태를 초기화하여 계정 선택 창 표시
+      await googleSignIn.signOut();
+
+      // 계정 선택 창 표시
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {
@@ -307,7 +312,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              onPressed: () => _showLoginModal(true), // Google 로그인 모달
+              onPressed: () async {
+                await _loginWithGoogle(); // Google 로그인 바로 실행
+              },
               child: Stack(
                 children: [
                   Align(
